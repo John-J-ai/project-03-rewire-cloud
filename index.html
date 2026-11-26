@@ -58,6 +58,13 @@ a{color:var(--accent);text-decoration:none}
 .sync-row:first-of-type{border-top:0}
 .sync-row .when{color:var(--faint);font-family:ui-monospace,monospace;flex:0 0 118px}
 .sync-row .what{flex:1;color:var(--muted)}
+.sync-row .synced{color:var(--teal);font-size:10px}
+.sb-field{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.sb-field input{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);font-size:12px}
+.sb-status{margin-top:10px;font-size:12px;padding:8px 10px;border-radius:8px;background:var(--surface-2);color:var(--muted)}
+.sb-status.ok{background:var(--teal-soft);color:var(--teal)}
+.sb-status.err{background:var(--rose-soft);color:var(--rose)}
+.sample-row .tag{font-size:10px;color:var(--accent);margin-left:6px}
 .sample-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--border);font-size:12px}
 .sample-row:first-of-type{border-top:0}
 .sample-row .when{color:var(--faint);font-family:ui-monospace,monospace;flex:0 0 118px}
@@ -283,7 +290,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-mark">反</div>
-      <div><div class="brand-name">反骨 REWIRE</div><div class="brand-sub">CLOUD READY · v0.1</div></div>
+      <div><div class="brand-name">反骨 REWIRE</div><div class="brand-sub">CLOUD READY · v0.2</div></div>
     </div>
     <div class="nav-title">工作台</div>
     <nav class="nav" id="nav">
@@ -298,14 +305,14 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
       <button class="nav-btn" data-page="cloud"><span class="ico">☁</span>云同步</button>
       <button class="nav-btn" data-page="data"><span class="ico">⌘</span>数据管理</button>
     </nav>
-    <div class="side-foot"><span class="cloud-badge">◌ 未接入云服务</span><br><span id="offline-badge" class="local-badge" style="display:none;margin-top:6px">● 可离线使用</span><br>云就绪原型：账号 / 同步 / 基准的数据结构已备好，服务端尚未开通。</div>
+    <div class="side-foot"><span class="cloud-badge" id="backend-badge">◌ 未接入云服务</span><br><span id="offline-badge" class="local-badge" style="display:none;margin-top:6px">● 可离线使用</span><br>可填 Supabase URL + anon key 连接免费后端；不填则纯本地原型。</div>
   </aside>
 
   <main class="main">
     <div class="account-bar">
       <div class="account-avatar" id="account-avatar">游</div>
       <div class="account-meta"><b id="account-name">本地访客</b><span id="account-sub">未登录 · 数据只在此浏览器</span></div>
-      <span class="cloud-badge">未接入云服务</span>
+      <span class="cloud-badge" id="account-cloud-badge">未接入云服务</span>
     </div>
 
     <!-- ============ DASH ============ -->
@@ -561,19 +568,20 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
       <div class="page-head">
         <div class="eyebrow">ANONYMOUS BENCHMARK</div>
         <h1>匿名效果基准</h1>
-        <p class="lead">把一次画像快照匿名化后存入样本池，用来回答一个问题：<b>别人做同类动作，画像真的变了吗？</b> 当前为本地原型，样本只存在此浏览器，未上传。</p>
+        <p class="lead">把一次画像快照匿名化后存入样本池，用来回答：<b>别人做同类动作，画像真的变了吗？</b> 本机样本先存本地；连接 Supabase 后可上传并拉取云端均值。</p>
       </div>
       <div class="card">
         <div class="card-head"><h2>提交匿名样本</h2><span class="pill teal" id="bench-count">0 份样本</span></div>
         <p class="small muted">只采集八维分数、计划完成率与动作标签；<b>不含身份、不含原始导出文本、不含文件路径</b>。日期模糊到天。</p>
         <div class="btn-row" style="margin-top:12px">
           <button class="btn primary sm" id="btn-bench-submit">记录当前状态为匿名样本</button>
-          <button class="btn ghost sm" id="btn-bench-clear">清空样本池</button>
+          <button class="btn sm" id="btn-bench-upload">上传到云端</button>
+          <button class="btn ghost sm" id="btn-bench-clear">清空本地样本</button>
         </div>
       </div>
       <div class="grid g2" style="margin-top:16px">
         <div class="card">
-          <div class="card-head"><h2>样本池均值</h2><span class="small muted">八维平均画像</span></div>
+          <div class="card-head"><h2>样本池均值</h2><span class="small muted" id="bench-source">仅本地</span></div>
           <div id="bench-bars"></div>
         </div>
         <div class="card">
@@ -581,27 +589,44 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
           <div id="bench-list"></div>
         </div>
       </div>
-      <div class="agg-warn" style="margin-top:16px">样本数少于 20 时，均值没有统计意义。不要拿两三条记录当结论；真正的基准需要跨设备、跨用户的匿名汇总，这一步要等服务端开通。</div>
+      <div class="agg-warn" style="margin-top:16px">样本数少于 20 时，均值没有统计意义。云端均值来自所有接入者的匿名样本，仍不等于科学结论。公开基准需明确告知参与者，并遵守所在地数据规则。</div>
     </section>
 
     <!-- ============ CLOUD ============ -->
     <section class="page" id="page-cloud">
       <div class="page-head">
-        <div class="eyebrow">CLOUD SYNC · NOT CONNECTED</div>
+        <div class="eyebrow">CLOUD SYNC · SUPABASE FREE</div>
         <h1>云同步</h1>
-        <p class="lead">账号、同步队列、匿名样本的数据结构已按云端接口设计好。当前<b>未接入云服务</b>：没有服务端、没有登录，所有操作只写本地队列。</p>
+        <p class="lead">填自己的 Supabase 免费项目地址与 <b>anon key</b> 即可真实推送变更与匿名样本。不填则纯本地原型。前端不硬编码任何地址或密钥。</p>
       </div>
       <div class="card">
-        <div class="card-head"><h2>同步状态</h2><span class="cloud-badge">未接入云服务</span></div>
-        <div class="grid g2" style="margin-top:10px">
-          <div><span class="small muted">账号</span><div><b id="cloud-account">本地访客</b></div></div>
-          <div><span class="small muted">待同步操作</span><div><b id="cloud-queue-count">0</b></div></div>
+        <div class="card-head"><h2>连接配置</h2><span class="cloud-badge" id="cloud-badge">未连接</span></div>
+        <p class="small muted">在 Supabase 控制台 → Project Settings → API 复制 Project URL 与 anon/public key。<b>只贴 anon key，绝不贴 service_role key</b>（后者可绕过权限，泄露等于拖库）。</p>
+        <div class="sb-field">
+          <input id="sb-url" type="url" placeholder="https://xxxx.supabase.co" autocomplete="off" spellcheck="false">
+          <input id="sb-key" type="password" placeholder="anon key (eyJ...)" autocomplete="off" spellcheck="false">
         </div>
-        <p class="small muted" style="margin-top:12px">开通后需由服务端提供连接配置；前端不会硬编码地址或密钥。确认授权由 WorkBuddy 界面完成，不会在页面里伪造登录。</p>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn primary sm" id="btn-sb-connect">保存并测试连接</button>
+          <button class="btn ghost sm" id="btn-sb-disconnect">断开并清除</button>
+        </div>
+        <div class="sb-status" id="sb-status">未配置。所有数据只写本地。</div>
       </div>
       <div class="card" style="margin-top:16px">
-        <div class="card-head"><h2>本地变更队列</h2><button class="btn ghost sm" id="btn-sync-clear">清空队列</button></div>
-        <p class="small muted">每次画像变更、打卡、导入存档、提交匿名样本都会记一条。开通后可作为增量同步依据。</p>
+        <div class="card-head"><h2>同步状态</h2><span class="pill teal" id="cloud-queue-count">0 条待推送</span></div>
+        <div class="grid g2" style="margin-top:10px">
+          <div><span class="small muted">本地标识</span><div><b id="cloud-account">本地访客</b></div></div>
+          <div><span class="small muted">最近推送</span><div><b id="cloud-last-push">—</b></div></div>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn primary sm" id="btn-sync-push">推送变更队列</button>
+          <button class="btn ghost sm" id="btn-sb-pull">拉取云端样本均值</button>
+          <button class="btn ghost sm" id="btn-sync-clear">清空队列</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>本地变更队列</h2><span class="small muted">未标记 ✓ 的会推送</span></div>
+        <p class="small muted">每次画像变更、打卡、导入存档、提交匿名样本都会记一条。推送成功后本地标 ✓。</p>
         <div id="sync-list" style="margin-top:10px"></div>
       </div>
       <div class="card" style="margin-top:16px">
@@ -619,7 +644,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
       <div class="page-head">
         <div class="eyebrow">LOCAL STORAGE</div>
         <h1>数据管理</h1>
-        <p class="lead">所有画像、打卡、清单状态都写在这个浏览器的 localStorage 里。没有账号，没有云端，没有服务器。</p>
+        <p class="lead">所有画像、打卡、清单状态都写在这个浏览器的 localStorage 里。云端是可选的：连接后只推送变更摘要与匿名样本。</p>
       </div>
       <div class="grid g2">
         <div class="card">
@@ -752,7 +777,8 @@ function freshState(){
     reminder:{enabled:false,time:"20:00",channels:[],lastSent:""},
     account:{name:"本地访客"},
     syncQueue:[],
-    benchSamples:[]
+    benchSamples:[],
+    backend:{url:"",key:"",clientId:"c-"+Math.random().toString(36).slice(2,10),lastPush:"",cloudMean:null,cloudCount:0}
   };
 }
 let state = loadState();
@@ -771,6 +797,10 @@ function loadState(){
     if(!merged.account||typeof merged.account!=="object")merged.account={name:"本地访客"};
     if(!Array.isArray(merged.syncQueue))merged.syncQueue=[];
     if(!Array.isArray(merged.benchSamples))merged.benchSamples=[];
+    if(!merged.backend||typeof merged.backend!=="object")merged.backend={url:"",key:"",lastPush:"",cloudMean:null,cloudCount:0};
+    merged.backend.url=merged.backend.url||"";
+    merged.backend.key=merged.backend.key||"";
+    merged.backend.clientId=merged.backend.clientId||"c-"+Math.random().toString(36).slice(2,10);
     return merged;
   }catch(e){ return freshState(); }
 }
@@ -790,7 +820,7 @@ function detectSyncChange(){
   else if(cur.i!==prev.i)kind="导入存档";
   else if(cur.b!==prev.b)kind="匿名样本";
   else if(JSON.stringify(prev.s)!==JSON.stringify(cur.s))kind="隐私清单";
-  state.syncQueue.unshift({at:Date.now(),kind});
+  state.syncQueue.unshift({at:Date.now(),kind,synced:false});
   if(state.syncQueue.length>200)state.syncQueue.length=200;
   _syncBaseline=now;
 }
@@ -1643,36 +1673,139 @@ if("serviceWorker" in navigator && location.protocol!=="file:"){
     .catch(()=>{});
 }
 
+/* ---------------- supabase adapter (REST, no SDK) ---------------- */
+function sbReady(){return !!(state.backend.url&&state.backend.key);}
+function sbBase(){return state.backend.url.replace(/\/+$/,"")+"/rest/v1";}
+function sbHeaders(extra){
+  return Object.assign({
+    "apikey":state.backend.key,
+    "Authorization":"Bearer "+state.backend.key,
+    "Content-Type":"application/json"
+  },extra||{});
+}
+async function sbRequest(path,opts){
+  if(!sbReady())throw new Error("未配置 Supabase");
+  const ctl=new AbortController(); const timer=setTimeout(()=>ctl.abort(),12000);
+  try{
+    const r=await fetch(sbBase()+path,Object.assign({signal:ctl.signal},opts,{headers:sbHeaders(opts&&opts.headers)}));
+    const txt=await r.text(); let data=null;
+    try{data=txt?JSON.parse(txt):null;}catch(e){data=txt;}
+    if(!r.ok)throw new Error((data&&data.message)||("HTTP "+r.status));
+    return data;
+  }finally{clearTimeout(timer);}
+}
+function sbStatus(msg,cls){
+  const el=$("#sb-status"); if(!el)return;
+  el.textContent=msg; el.className="sb-status"+(cls?" "+cls:"");
+}
+function renderBackendUI(){
+  const ok=sbReady();
+  $("#cloud-badge").textContent=ok?"已连接":"未连接";
+  $("#cloud-badge").className=ok?"pill teal":"cloud-badge";
+  $("#backend-badge").textContent=ok?"● 已连接 Supabase":"◌ 未接入云服务";
+  $("#backend-badge").className=ok?"local-badge":"cloud-badge";
+  $("#account-cloud-badge").textContent=ok?"● 已连接":"未接入云服务";
+  $("#account-cloud-badge").className=ok?"local-badge":"cloud-badge";
+  $("#sb-url").value=state.backend.url; $("#sb-key").value=state.backend.key;
+  $("#cloud-last-push").textContent=state.backend.lastPush||"—";
+  if(!ok)sbStatus("未配置。所有数据只写本地。","");
+  if(typeof renderBenchmark==="function"&&$("#btn-bench-upload"))renderBenchmark();
+}
+$("#btn-sb-connect").addEventListener("click",async()=>{
+  const url=$("#sb-url").value.trim().replace(/\/+$/,""), key=$("#sb-key").value.trim();
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){sbStatus("URL 格式应为 https://xxxx.supabase.co","err");return;}
+  if(!/^eyJ/.test(key)){sbStatus("anon key 应以 eyJ 开头；确认复制的是 anon/public key，不是 service_role。","err");return;}
+  state.backend.url=url; state.backend.key=key; saveState(); renderBackendUI();
+  sbStatus("正在测试连接…","");
+  try{
+    await sbRequest("/bench_samples?select=id&limit=1");
+    sbStatus("连接成功。可推送变更队列与匿名样本。","ok"); toast("Supabase 已连接");
+  }catch(e){ sbStatus("连接失败："+e.message+"（检查 SQL 是否已执行、anon 读权限是否开启）","err"); toast("连接失败"); }
+});
+$("#btn-sb-disconnect").addEventListener("click",()=>{
+  state.backend.url=""; state.backend.key=""; state.backend.cloudMean=null; state.backend.cloudCount=0;
+  saveState(); renderBackendUI(); renderBenchmark(); sbStatus("已断开。所有数据只写本地。",""); toast("已断开");
+});
+$("#btn-sync-push").addEventListener("click",async()=>{
+  if(!sbReady()){toast("先在上方连接 Supabase");return;}
+  const rows=state.syncQueue.filter(x=>!x.synced);
+  if(!rows.length){toast("没有待推送的变更");return;}
+  const payload=rows.map(x=>({cid:state.backend.clientId,kind:x.kind,at:new Date(x.at).toISOString()}));
+  try{
+    await sbRequest("/sync_events?on_conflict=cid,at",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(payload)});
+    rows.forEach(x=>x.synced=true);
+    state.backend.lastPush=new Date().toLocaleString("zh-CN",{hour12:false});
+    saveState(); renderAll(); toast("已推送 "+rows.length+" 条变更");
+  }catch(e){toast("推送失败："+e.message);}
+});
+$("#btn-bench-upload").addEventListener("click",async()=>{
+  if(!sbReady()){toast("先在云同步页连接 Supabase");return;}
+  const rows=state.benchSamples.filter(x=>!x.uploaded);
+  if(!rows.length){toast("没有未上传的样本");return;}
+  const payload=rows.map(x=>({
+    sample_id:state.backend.clientId+"-"+x.id,
+    cid:state.backend.clientId,
+    sample_date:x.date,
+    dims:x.current,
+    progress:x.progress,
+    at:new Date(x.at).toISOString()
+  }));
+  try{
+    await sbRequest("/bench_samples?on_conflict=sample_id",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(payload)});
+    rows.forEach(x=>x.uploaded=true);
+    saveState(); renderBenchmark(); toast("已上传 "+rows.length+" 份匿名样本");
+  }catch(e){toast("上传失败："+e.message);}
+});
+$("#btn-sb-pull").addEventListener("click",async()=>{
+  if(!sbReady()){toast("先在上方连接 Supabase");return;}
+  try{
+    const rows=await sbRequest("/bench_samples?select=dims&limit=1000");
+    if(!Array.isArray(rows)||!rows.length){toast("云端暂无样本");return;}
+    const mean={}; DIMS.forEach(d=>{
+      const vals=rows.map(r=>r.dims&&r.dims[d.key]).filter(v=>typeof v==="number");
+      mean[d.key]=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
+    });
+    state.backend.cloudMean=mean; state.backend.cloudCount=rows.length;
+    saveState(); renderBenchmark(); toast("已拉取 "+rows.length+" 份样本均值");
+  }catch(e){toast("拉取失败："+e.message);}
+});
+
 /* ---------------- cloud prototype: account / sync / benchmark ---------------- */
 function renderAccount(){
   const name=state.account&&state.account.name||"本地访客";
   $("#account-name").textContent=name;
   $("#account-avatar").textContent=name.slice(0,1);
-  $("#account-sub").textContent="未登录 · 数据只在此浏览器";
-  $("#cloud-account").textContent=name;
-  $("#cloud-queue-count").textContent=state.syncQueue.length;
+  $("#account-sub").textContent=sbReady()?"已连接 Supabase · 可推送":"未登录 · 数据只在此浏览器";
+  $("#cloud-account").textContent=state.backend.clientId;
+  $("#cloud-queue-count").textContent=state.syncQueue.filter(x=>!x.synced).length+" 条待推送";
 }
 function renderCloud(){
   const el=$("#sync-list"); if(!el)return;
   if(!state.syncQueue.length){el.innerHTML='<div class="agg-empty">暂无变更记录。改画像、打卡或提交样本后会出现在这里。</div>';return;}
-  el.innerHTML=state.syncQueue.slice(0,30).map(x=>`<div class="sync-row"><span class="when">${new Date(x.at).toLocaleString("zh-CN",{hour12:false}).slice(0,16)}</span><span class="what">${x.kind}</span></div>`).join("");
+  el.innerHTML=state.syncQueue.slice(0,30).map(x=>`<div class="sync-row"><span class="when">${new Date(x.at).toLocaleString("zh-CN",{hour12:false}).slice(0,16)}</span><span class="what">${x.kind}</span>${x.synced?'<span class="synced">✓ 已推送</span>':""}</div>`).join("");
 }
 function renderBenchmark(){
   const samples=state.benchSamples;
-  $("#bench-count").textContent=samples.length+" 份样本";
+  const cloud=state.backend.cloudMean;
+  $("#bench-count").textContent=samples.length+" 份本地"+(state.backend.cloudCount?" + "+state.backend.cloudCount+" 份云端":"");
+  $("#bench-source").textContent=cloud?"本地 + 云端均值":"仅本地"+(samples.length?"":"（空）");
+  $("#btn-bench-upload").disabled=!sbReady();
+  $("#btn-bench-upload").textContent=sbReady()?"上传到云端":"上传（先连接）";
   const bars=$("#bench-bars"), list=$("#bench-list");
-  if(!samples.length){
+  if(!samples.length&&!cloud){
     bars.innerHTML='<div class="agg-empty">还没有样本。点上面按钮记录一次当前状态。</div>';
     list.innerHTML='<div class="agg-empty">样本池为空。</div>';
     return;
   }
   bars.innerHTML=DIMS.map(d=>{
-    const mean=Math.round(samples.reduce((s,x)=>s+(x.current[d.key]||0),0)/samples.length);
+    const mean=cloud
+      ? cloud[d.key]
+      : (samples.length?Math.round(samples.reduce((s,x)=>s+(x.current[d.key]||0),0)/samples.length):0);
     return `<div class="bench-dim"><span>${d.name}</span><span class="bar"><i style="width:${mean}%"></i></span><span class="val">${mean}</span></div>`;
   }).join("");
   list.innerHTML=samples.slice().reverse().slice(0,20).map(x=>`<div class="sample-row">
     <span class="when">${x.date}</span>
-    <span class="who">${DIMS.slice().sort((a,b)=>x.current[b.key]-x.current[a.key]).slice(0,2).map(d=>d.name).join("、")} · 完成 ${x.progress}%</span>
+    <span class="who">${DIMS.slice().sort((a,b)=>x.current[b.key]-x.current[a.key]).slice(0,2).map(d=>d.name).join("、")} · 完成 ${x.progress}%${x.uploaded?'<span class="tag">✓ 已上传</span>':""}</span>
     <button class="btn ghost sm" data-del-bench="${x.id}">删除</button></div>`).join("");
   $$("[data-del-bench]").forEach(b=>b.addEventListener("click",()=>{
     state.benchSamples=state.benchSamples.filter(x=>x.id!==b.dataset.delBench);
@@ -1685,7 +1818,8 @@ $("#btn-bench-submit").addEventListener("click",()=>{
     date:todayStr(),
     current:Object.assign({},state.current),
     progress:planPct(),
-    at:Date.now()
+    at:Date.now(),
+    uploaded:false
   });
   if(state.benchSamples.length>500)state.benchSamples=state.benchSamples.slice(-500);
   saveState(); renderAll(); toast("已提交一份匿名样本");
@@ -1708,7 +1842,7 @@ $("#btn-sync-clear").addEventListener("click",()=>{
 function renderAll(){
   renderProfile(); renderTarget(); renderRadars(); dimBars($("#dash-dims"));
   renderPlan(); renderReminder(); generateAmmo(); renderShield(); renderStats(); renderEffect(); renderData(); renderDataSources(); renderMultiSource();
-  renderAccount(); renderCloud(); renderBenchmark();
+  renderAccount(); renderCloud(); renderBenchmark(); renderBackendUI();
   $$("[data-ammo]").forEach(b=>b.classList.toggle("on",b.dataset.ammo===state.ammoType));
 }
 if(!state.plan) buildPlan(false);

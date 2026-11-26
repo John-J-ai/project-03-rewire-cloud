@@ -1,4 +1,4 @@
-const CACHE = "rewire-cloud-v0.1";
+const CACHE = "rewire-cloud-v0.2";
 const ASSETS = [
   "./",
   "./index.html",
