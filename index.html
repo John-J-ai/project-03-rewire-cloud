@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反骨 REWIRE · 互联网人格重塑实验室</title>
+<style>
+:root{
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#fafbfd; --border:#e4e8f0;
+  --text:#182033; --muted:#6d768a; --faint:#98a1b3;
+  --accent:#4f46e5; --accent-soft:#eef0ff; --teal:#0d9488; --teal-soft:#e7f7f4;
+  --amber:#d97706; --amber-soft:#fff5e6; --rose:#e11d48; --rose-soft:#fff0f3;
+  --shadow:0 1px 2px rgba(24,32,51,.04),0 8px 24px rgba(24,32,51,.05);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent);text-decoration:none}
+.app{display:flex;min-height:100vh}
+
+/* ---------- sidebar ---------- */
+.sidebar{
+  width:232px;flex:0 0 232px;background:var(--surface);border-right:1px solid var(--border);
+  padding:24px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--accent),#7c3aed);
+  color:#fff;display:grid;place-items:center;font-weight:800;font-size:17px;letter-spacing:-1px;
+  box-shadow:0 6px 16px rgba(79,70,229,.25);
+}
+.brand-name{font-weight:750;font-size:17px;letter-spacing:.3px;line-height:1.2}
+.brand-sub{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.nav-title{font-size:11px;color:var(--faint);letter-spacing:.1em;padding:8px 10px 6px;font-weight:700}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;
+  padding:10px 11px;border-radius:10px;color:var(--muted);text-align:left;font-weight:550;margin-bottom:2px;
+}
+.nav-btn:hover{background:var(--surface-2);color:var(--text)}
+.nav-btn.active{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.nav-btn .ico{width:18px;text-align:center;font-size:15px}
+.side-foot{margin-top:22px;padding:12px 10px;border-top:1px solid var(--border);font-size:11px;color:var(--faint)}
+.local-badge{display:inline-flex;align-items:center;gap:5px;color:var(--teal);font-weight:650}
+.account-bar{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:12px}
+.account-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:750;flex:0 0 auto}
+.account-meta{flex:1;min-width:0}
+.account-meta b{display:block;font-size:13px}
+.account-meta span{color:var(--muted);font-size:11px}
+.cloud-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;background:var(--amber-soft);color:var(--amber);font-weight:700;font-size:11px;white-space:nowrap}
+.sync-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:12px}
+.sync-row:first-of-type{border-top:0}
+.sync-row .when{color:var(--faint);font-family:ui-monospace,monospace;flex:0 0 118px}
+.sync-row .what{flex:1;color:var(--muted)}
+.sample-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--border);font-size:12px}
+.sample-row:first-of-type{border-top:0}
+.sample-row .when{color:var(--faint);font-family:ui-monospace,monospace;flex:0 0 118px}
+.sample-row .who{flex:1;color:var(--muted)}
+.bench-dim{display:grid;grid-template-columns:52px 1fr 70px;align-items:center;gap:10px;font-size:12px;margin:4px 0}
+.bench-dim .bar{height:8px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.bench-dim .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:5px}
+.bench-dim .val{text-align:right;font-family:ui-monospace,monospace;color:var(--muted)}
+
+/* ---------- main ---------- */
+.main{flex:1;min-width:0;padding:32px 40px 80px;max-width:1240px;margin:0 auto;width:100%}
+.page{display:none;animation:fade .22s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page-head{margin-bottom:24px}
+.eyebrow{font-size:11px;font-weight:750;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+h1{font-size:28px;letter-spacing:-.5px;margin:6px 0 6px;font-weight:780}
+h2{font-size:17px;margin:0 0 14px;font-weight:730}
+h3{font-size:14px;margin:0 0 8px;font-weight:700}
+.lead{color:var(--muted);margin:0;max-width:760px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none;background:var(--surface-2)}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:12px}
+.tiny{font-size:11px}
+.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:var(--surface-2);color:var(--muted)}
+.pill.teal{background:var(--teal-soft);color:var(--teal)}
+.pill.indigo{background:var(--accent-soft);color:var(--accent)}
+.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.pill.rose{background:var(--rose-soft);color:var(--rose)}
+.btn{
+  border:1px solid var(--border);background:var(--surface);padding:8px 14px;border-radius:9px;
+  font-weight:650;font-size:13px;transition:.15s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#4338ca;color:#fff}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+hr.sep{border:0;border-top:1px solid var(--border);margin:18px 0}
+
+/* ---------- hero ---------- */
+.hero{
+  background:linear-gradient(120deg,#ffffff 0%,#f0f1ff 100%);
+  border:1px solid var(--border);border-radius:18px;padding:28px 30px;position:relative;overflow:hidden;
+}
+.hero:after{content:"";position:absolute;right:-60px;top:-90px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(79,70,229,.12),transparent 70%);pointer-events:none}
+.hero h1{font-size:32px;margin:8px 0 10px}
+.hero p{max-width:690px;color:var(--muted);margin:0 0 18px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;max-width:690px}
+.stat{background:rgba(255,255,255,.75);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-size:22px;line-height:1.2}
+.stat span{font-size:11px;color:var(--muted)}
+
+/* ---------- radar ---------- */
+.radar-wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.radar-wrap svg{flex:0 0 auto;max-width:100%;height:auto}
+.legend{display:flex;gap:16px;font-size:12px;margin-top:4px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px}
+.dim-list{display:flex;flex-direction:column;gap:8px;flex:1;min-width:210px}
+.dim-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.dim-row .nm{width:36px;color:var(--muted)}
+.dim-row .bar{flex:1;height:6px;background:var(--surface-2);border-radius:4px;overflow:hidden;position:relative}
+.dim-row .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:4px}
+.dim-row .bar u{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--teal);text-decoration:none}
+.dim-row .vl{width:52px;text-align:right;font-family:ui-monospace,monospace;font-size:11px;color:var(--muted)}
+
+/* ---------- sliders ---------- */
+.slider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 26px}
+.slider-item label{display:flex;justify-content:space-between;font-size:13px;font-weight:650;margin-bottom:6px}
+.slider-item label span{font-family:ui-monospace,monospace;color:var(--accent);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--accent);height:5px}
+
+/* ---------- presets ---------- */
+.preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.preset{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.15s;text-align:left}
+.preset:hover{border-color:var(--accent);transform:translateY(-1px)}
+.preset.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.preset .t{font-weight:730;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.preset .d{font-size:11px;color:var(--muted);margin-top:4px}
+.preset .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:9px}
+
+/* ---------- diagnosis ---------- */
+.diag{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:10px;padding:14px 16px;color:var(--muted)}
+.diag b{color:var(--text)}
+.gap-list{display:flex;flex-direction:column;gap:9px}
+.gap-item{display:flex;align-items:center;gap:10px;font-size:12px}
+.gap-item .g-nm{width:40px;font-weight:650}
+.gap-item .g-track{flex:1;height:8px;background:var(--surface-2);border-radius:5px;position:relative;overflow:hidden}
+.gap-item .g-track i{position:absolute;top:0;bottom:0;border-radius:5px}
+.gap-item .g-val{width:44px;text-align:right;font-family:ui-monospace,monospace;font-size:11px}
+
+/* ---------- plan ---------- */
+.plan-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.progress{height:8px;background:var(--surface-2);border-radius:6px;overflow:hidden;flex:1;min-width:160px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7c3aed);border-radius:6px;transition:width .3s}
+.day-card{margin-bottom:14px}
+.day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.day-num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;
+  background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:13px;margin-right:10px}
+.task{display:flex;gap:11px;padding:10px 0;border-top:1px solid var(--border)}
+.task:first-of-type{border-top:0}
+.task input[type=checkbox]{margin-top:4px;width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto}
+.task-body{flex:1;min-width:0}
+.task-title{font-weight:620;font-size:13px}
+.task.done .task-title{text-decoration:line-through;color:var(--faint)}
+.task-detail{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ---------- ammo ---------- */
+.ammo-box{background:#1e2434;color:#dbe3f5;border-radius:12px;padding:16px;font-family:ui-monospace,Consolas,monospace;
+  font-size:12px;line-height:1.9;min-height:200px;white-space:pre-wrap;word-break:break-all}
+.ammo-box .k{color:#8ea2ff}
+.tab-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--border);background:var(--surface);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:650;color:var(--muted)}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#ammo-box{white-space:normal;padding:10px 12px;line-height:1.55}
+.ammo-note{font-size:10px;color:#7f8dab;padding:2px 0 8px}
+.ammo-line{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.ammo-line:last-child{border-bottom:0}
+.ammo-line .idx{color:#6b7aa3;width:22px;flex:0 0 auto;font-size:11px}
+.ammo-line .q{flex:1;min-width:0;word-break:break-word}
+.ammo-line .tag{font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(142,162,255,.18);color:#a8b6ff;white-space:nowrap}
+.ammo-line .tag.evo{background:rgba(13,148,136,.22);color:#5ee0cf}
+.fb-btn{border:1px solid rgba(255,255,255,.18);background:transparent;color:#cbd5e8;border-radius:6px;
+  width:24px;height:24px;line-height:1;font-size:13px;flex:0 0 auto;padding:0}
+.fb-btn:hover{background:rgba(255,255,255,.12)}
+.fb-btn.keep{color:#5ee0cf;border-color:rgba(94,224,207,.45)}
+.fb-btn.drop{color:#ff8ba7;border-color:rgba(255,139,167,.45)}
+.evo-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.legend-toggle{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.legend-toggle button{border:1px solid var(--border);background:var(--surface);border-radius:999px;
+  padding:4px 10px;font-size:11px;color:var(--muted)}
+.legend-toggle button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.metric{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.metric b{display:block;font-size:21px;line-height:1.25}
+.metric span{font-size:11px;color:var(--muted)}
+.snapshot-table{width:100%;border-collapse:collapse;font-size:12px}
+.snapshot-table th,.snapshot-table td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--border)}
+.snapshot-table th{font-size:11px;color:var(--muted);font-weight:650}
+.drop-zone{border:1px dashed var(--border);border-radius:12px;padding:22px;text-align:center;background:var(--surface-2);transition:.15s}
+.drop-zone.over{border-color:var(--accent);background:var(--accent-soft)}
+.link-btn{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline}
+.import-dim{display:grid;grid-template-columns:40px 1fr 90px;align-items:center;gap:10px;font-size:12px;margin:6px 0}
+.import-dim .bar{height:7px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.import-dim .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7c3aed);border-radius:5px}
+.import-dim .val{text-align:right;font-family:ui-monospace,monospace;color:var(--muted)}
+.source-list{margin-top:12px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface-2)}
+.source-list summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--accent)}
+.source-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--border);font-size:12px}
+.source-row:first-of-type{border-top:0;margin-top:8px}
+.source-row .platform{width:64px;flex:0 0 auto;font-weight:700}
+.source-row .path{flex:1;color:var(--muted)}
+.agg-box{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2);margin:12px 0}
+.agg-dim{display:grid;grid-template-columns:52px 1fr 112px;align-items:center;gap:10px;font-size:12px;margin:5px 0}
+.agg-dim .bar{height:7px;background:var(--surface);border-radius:5px;overflow:hidden}
+.agg-dim .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7c3aed);border-radius:5px}
+.agg-dim .val{text-align:right;font-family:ui-monospace,monospace;color:var(--muted)}
+.agg-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--border);font-size:12px}
+.agg-row:first-child{border-top:0}
+.agg-row .who{font-weight:700;min-width:70px}
+.agg-row .meta{color:var(--muted);flex:1}
+.agg-warn{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 10px;font-size:12px;margin:8px 0}
+.agg-empty{font-size:12px;color:var(--muted);padding:10px 0}
+.reminder-grid{display:grid;grid-template-columns:160px 1fr;gap:14px;align-items:center;margin:14px 0}
+.reminder-channels{display:flex;gap:8px;flex-wrap:wrap}
+.reminder-channels label{display:flex;align-items:center;gap:5px;font-size:12px;padding:5px 9px;border:1px solid var(--border);border-radius:8px;cursor:pointer}
+.reminder-channels input{accent-color:var(--accent)}
+
+/* ---------- shield ---------- */
+.shield-item{display:flex;flex-wrap:wrap;gap:12px;padding:12px 0;border-top:1px solid var(--border)}
+.shield-item:first-child{border-top:0}
+.shield-item input{margin-top:3px;width:16px;height:16px;accent-color:var(--teal)}
+.shield-item b{font-size:13px}
+.shield-item.done b{text-decoration:line-through;color:var(--faint)}
+.shield-item p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.shield-actions{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 0 28px}
+.shield-item label{display:flex;gap:12px;flex:1 1 240px;cursor:pointer}
+.shield-actions .btn{font-size:11px;padding:4px 9px}
+
+/* ---------- misc ---------- */
+.note{font-size:12px;color:var(--muted);background:var(--amber-soft);border:1px solid #f6dfb5;
+  border-radius:10px;padding:10px 13px}
+.note.teal{background:var(--teal-soft);border-color:#b9e6dd}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:12px}
+.kbd{background:var(--surface-2);border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:11px;font-family:ui-monospace,monospace}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e2434;color:#fff;
+  padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:1000px){
+  .g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .app{display:block}
+  .sidebar{width:auto;height:auto;position:static;padding:14px;border-right:0;border-bottom:1px solid var(--border)}
+  .nav{display:flex;overflow-x:auto;gap:4px}
+  .nav-btn{white-space:nowrap;width:auto}
+  .nav-title,.side-foot{display:none}
+  .main{padding:20px 16px 60px}
+  .g2,.g3,.g4,.slider-grid,.preset-grid,.stat-row,.metric-grid,.reminder-grid{grid-template-columns:1fr}
+  .source-row{flex-wrap:wrap}
+  .source-row .platform{width:auto}
+  h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">反</div>
+      <div><div class="brand-name">反骨 REWIRE</div><div class="brand-sub">CLOUD READY · v0.1</div></div>
+    </div>
+    <div class="nav-title">工作台</div>
+    <nav class="nav" id="nav">
+      <button class="nav-btn active" data-page="dash"><span class="ico">◈</span>控制台</button>
+      <button class="nav-btn" data-page="profile"><span class="ico">◉</span>① 人格诊断</button>
+      <button class="nav-btn" data-page="target"><span class="ico">◎</span>② 设定目标</button>
+      <button class="nav-btn" data-page="plan"><span class="ico">▤</span>③ 驯化计划</button>
+      <button class="nav-btn" data-page="effect"><span class="ico">⌁</span>④ 效果追踪</button>
+      <button class="nav-btn" data-page="ammo"><span class="ico">✳</span>干扰弹药库</button>
+      <button class="nav-btn" data-page="shield"><span class="ico">⛨</span>隐私盾清单</button>
+      <button class="nav-btn" data-page="benchmark"><span class="ico">◎</span>匿名基准</button>
+      <button class="nav-btn" data-page="cloud"><span class="ico">☁</span>云同步</button>
+      <button class="nav-btn" data-page="data"><span class="ico">⌘</span>数据管理</button>
+    </nav>
+    <div class="side-foot"><span class="cloud-badge">◌ 未接入云服务</span><br><span id="offline-badge" class="local-badge" style="display:none;margin-top:6px">● 可离线使用</span><br>云就绪原型：账号 / 同步 / 基准的数据结构已备好，服务端尚未开通。</div>
+  </aside>
+
+  <main class="main">
+    <div class="account-bar">
+      <div class="account-avatar" id="account-avatar">游</div>
+      <div class="account-meta"><b id="account-name">本地访客</b><span id="account-sub">未登录 · 数据只在此浏览器</span></div>
+      <span class="cloud-badge">未接入云服务</span>
+    </div>
+
+    <!-- ============ DASH ============ -->
+    <section class="page active" id="page-dash">
+      <div class="hero">
+        <div class="eyebrow">ANTI-BIG-DATA TOOLKIT</div>
+        <h1>算法不读心，它读样本。</h1>
+        <p>你的每一次点击都在给平台喂数据，平台据此决定你看到什么。反骨不删数据、不攻击平台，而是做两件事：<b>主动喂新样本</b> + <b>降低旧标签权重</b>。7 天，把推荐算法从"它以为的你"扳向"你想要的你"。</p>
+        <div class="hero-actions">
+          <button class="btn primary" data-go="profile">开始重塑 →</button>
+          <button class="btn" data-go="plan">查看我的计划</button>
+          <button class="btn" id="btn-install" style="display:none">安装到桌面</button>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b id="s-days">7</b><span>天驯化周期</span></div>
+          <div class="stat"><b id="s-tasks">0%</b><span>计划完成度</span></div>
+          <div class="stat"><b id="s-gap">—</b><span>最大人格落差维度</span></div>
+        </div>
+      </div>
+
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-head"><h2>当前画像 vs 目标画像</h2><button class="btn sm" data-go="target">调整目标</button></div>
+          <div class="radar-wrap">
+            <div id="radar-dash"></div>
+            <div class="dim-list" id="dash-dims"></div>
+          </div>
+          <div class="legend"><span><i style="background:var(--accent)"></i>当前（算法以为的你）</span><span><i style="background:var(--teal)"></i>目标（你想要的你）</span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>工作流</h2><span class="pill indigo">四步闭环</span></div>
+          <div class="grid" style="gap:10px">
+            <div class="card flat" style="padding:12px 14px"><b>① 诊断</b><div class="small muted">给 8 个维度打分，看见算法给你贴的标签。</div></div>
+            <div class="card flat" style="padding:12px 14px"><b>② 设定</b><div class="small muted">选一个目标人格，或直接自定义各维度权重。</div></div>
+            <div class="card flat" style="padding:12px 14px"><b>③ 驯化</b><div class="small muted">按 7 天计划主动搜索、观看、关注、清理旧标签。</div></div>
+            <div class="card flat" style="padding:12px 14px"><b>④ 干扰</b><div class="small muted">用随机兴趣样本稀释画像，再配合隐私盾止住新数据流入。</div></div>
+          </div>
+          <div class="note" style="margin-top:14px">原理：推荐系统靠标签权重预测你。持续喂新内容 + 反复点"不感兴趣"，权重会迁移。<b>这是行为干预工具，不是自动化脚本</b>——不绕平台规则，不批量刷量。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROFILE ============ -->
+    <section class="page" id="page-profile">
+      <div class="page-head">
+        <div class="eyebrow">STEP 01 / DIAGNOSE</div>
+        <h1>人格诊断</h1>
+        <p class="lead">凭最近 30 天的真实刷手机习惯打分，不是凭你希望自己是什么样。0 = 从不碰，100 = 占据你大半推荐流。</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h2>八维兴趣强度</h2><span class="pill" id="profile-sum">均分 —</span></div>
+          <div class="slider-grid" id="sliders"></div>
+          <div class="btn-row" style="margin-top:20px">
+            <button class="btn" id="btn-random-profile">随便填个示例</button>
+            <button class="btn ghost" id="btn-zero-profile">全部归零</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>算法此刻的判断</h2><span class="pill amber">画像解读</span></div>
+          <div class="diag" id="diagnosis"></div>
+          <hr class="sep">
+          <h3>画像风险</h3>
+          <div id="profile-risk" class="grid" style="gap:8px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>从官方导出数据诊断</h2><span class="pill teal">本地解析 · 不上传</span></div>
+        <p class="small muted">支持 Google Takeout「我的活动」JSON、YouTube <span class="mono">watch-history.json / .html</span>，以及通用 JSON / CSV / TXT。从压缩包里解压出文件后拖进来或多选。</p>
+        <div class="drop-zone" id="drop-zone">
+          <div>把导出文件拖到这里，或 <label class="link-btn" for="import-data-file">选择文件</label></div>
+          <input type="file" id="import-data-file" accept=".json,.html,.htm,.csv,.txt" multiple hidden>
+          <div class="small faint" id="import-file-list" style="margin-top:6px">尚未选择文件</div>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn sm" id="btn-demo-import">用示例数据试一下</button>
+          <button class="btn ghost sm" id="btn-clear-import">清除预览</button>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          <label class="small muted" for="import-platform">来源平台</label>
+          <select id="import-platform" style="padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:12px">
+            <option value="">自动识别</option>
+            <option>Google</option><option>YouTube</option><option>TikTok</option>
+            <option>微信</option><option>B 站</option><option>淘宝</option>
+            <option>抖音</option><option>小红书</option><option>知乎</option><option>通用</option>
+          </select>
+          <button class="btn sm" id="btn-save-import">存入多源档案</button>
+        </div>
+        <details class="source-list">
+          <summary>官方数据从哪拿？点开看 10 个渠道与路径</summary>
+          <div id="source-list"></div>
+        </details>
+        <div id="import-result" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>多源档案（本地聚合）</h2><span class="pill indigo" id="agg-cover">0 / 9 渠道</span></div>
+        <p class="small muted">把不同平台的导出结果存档，按唯一文本数加权合成一张画像；文本指纹只在本地比对，不保存原文。跨源重复会被标出，避免把同一个兴趣当两个证据。</p>
+        <div id="agg-result"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>画像可视化</h2><span class="small muted">绿色刻度 = 目标位置</span></div>
+        <div class="radar-wrap"><div id="radar-profile"></div><div class="dim-list" id="profile-dims"></div></div>
+      </div>
+    </section>
+
+    <!-- ============ TARGET ============ -->
+    <section class="page" id="page-target">
+      <div class="page-head">
+        <div class="eyebrow">STEP 02 / TARGET</div>
+        <h1>设定目标人格</h1>
+        <p class="lead">选一个模板快速起步，再手动微调。目标不是"变成另一个人"，而是给算法一个更健康的输入方向。</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>预设人格模板</h2><span class="pill teal" id="target-name">当前：自定义</span></div>
+        <div class="preset-grid" id="presets"></div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-head"><h2>自定义目标强度</h2><button class="btn sm" id="btn-copy-current">复制当前画像</button></div>
+          <div class="slider-grid" id="target-sliders"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>落差分析</h2><span class="small muted">按绝对差值排序</span></div>
+          <div class="gap-list" id="gap-list"></div>
+          <div class="note teal" style="margin-top:16px" id="target-advice"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PLAN ============ -->
+    <section class="page" id="page-plan">
+      <div class="page-head">
+        <div class="eyebrow">STEP 03 / REWIRE</div>
+        <h1>7 天驯化计划</h1>
+        <p class="lead">每天 3–4 个动作，全部是你在正常刷手机时顺手完成的。重点是<b>主动搜索</b>和<b>明确的负反馈</b>——这两类信号对推荐模型权重影响最大。</p>
+      </div>
+      <div class="plan-toolbar">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:260px">
+          <span class="small muted" id="plan-progress-text">0 / 0</span>
+          <div class="progress"><i id="plan-progress-bar" style="width:0%"></i></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn sm" id="btn-plan-length">周期为 7 天</button>
+          <button class="btn primary sm" id="btn-gen-plan">重新生成计划</button>
+        </div>
+      </div>
+      <div id="plan-list"></div>
+      <div class="note">打卡状态保存在本地。计划按当前画像与目标画像的差值生成；改完画像后记得重新生成。</div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>每日提醒</h2><label class="pill"><input type="checkbox" id="reminder-toggle" style="margin-right:5px;accent-color:var(--accent)">开启（默认关闭）</label></div>
+        <p class="small muted">四种渠道任选，全部可单独使用。系统通知需授权，页面关闭后仅「已安装的 PWA + 支持后台同步的浏览器」能收到；<b>日历 .ics 最稳</b>，推荐至少勾这一个。</p>
+        <div class="reminder-grid">
+          <label class="small">提醒时间<input type="time" id="reminder-time" style="display:block;margin-top:5px;padding:5px 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)"></label>
+          <div class="reminder-channels">
+            <label><input type="checkbox" data-channel="notification">系统通知</label>
+            <label><input type="checkbox" data-channel="calendar">日历 .ics</label>
+            <label><input type="checkbox" data-channel="email">邮件草稿</label>
+            <label><input type="checkbox" data-channel="clipboard">复制文案</label>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary sm" id="btn-test-reminder">发送测试提醒</button>
+          <button class="btn sm" id="btn-download-ics">下载日历</button>
+          <button class="btn sm" id="btn-mail-reminder">邮件草稿</button>
+          <button class="btn sm" id="btn-copy-reminder">复制文案</button>
+        </div>
+        <div id="reminder-status" class="small muted" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <!-- ============ EFFECT ============ -->
+    <section class="page" id="page-effect">
+      <div class="page-head">
+        <div class="eyebrow">STEP 04 / MEASURE</div>
+        <h1>效果追踪</h1>
+        <p class="lead">每天首次打开自动记录一次画像。驯化有没有生效，看曲线，不靠感觉。</p>
+      </div>
+      <div class="metric-grid">
+        <div class="metric"><b id="m-close">—</b><span>当前目标接近度</span></div>
+        <div class="metric"><b id="m-drift">—</b><span>累计画像漂移（均分）</span></div>
+        <div class="metric"><b id="m-days">0</b><span>已记录天数</span></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>画像变化曲线</h2><button class="btn sm" id="btn-add-snapshot">记录当前画像</button></div>
+        <div class="legend-toggle" id="effect-toggles"></div>
+        <div id="effect-chart"></div>
+        <div class="legend" id="effect-legend"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>历史快照</h2><span class="small muted">点「删除」可移除单日记录</span></div>
+        <table class="snapshot-table" id="snapshot-table"></table>
+      </div>
+    </section>
+
+    <!-- ============ AMMO ============ -->
+    <section class="page" id="page-ammo">
+      <div class="page-head">
+        <div class="eyebrow">SIGNAL NOISE</div>
+        <h1>干扰弹药库</h1>
+        <p class="lead">用跨领域的兴趣样本稀释平台对你的单一画像。每条词都能标记「有用 / 淘汰」——引擎会据此加权采样，并从有效词自动衍生下一批查询。</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="evo-stats" id="evo-stats"></div>
+          <div class="tab-row" id="ammo-tabs">
+            <button class="tab on" data-ammo="search">干扰搜索词</button>
+            <button class="tab" data-ammo="tags">伪装兴趣标签</button>
+            <button class="tab" data-ammo="burst">破茧话题包</button>
+          </div>
+          <div class="ammo-box" id="ammo-box"></div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn primary sm" id="btn-ammo-copy">复制全部</button>
+            <button class="btn sm" id="btn-ammo-new">换一批</button>
+            <button class="btn ghost sm" id="btn-evo-reset">重置演化</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>怎么用</h2>
+          <div class="small muted" style="margin-bottom:14px">三种弹药对应三种打法：</div>
+          <div class="shield-item"><div>🔍</div><div><b>干扰搜索词</b><p>分散在各领域，手动搜索并点开结果。给平台一批"边界模糊"的样本。</p></div></div>
+          <div class="shield-item"><div>🏷</div><div><b>伪装兴趣标签</b><p>填进 App 的兴趣选择页 / 注册引导页，或作为搜索/关注关键词。</p></div></div>
+          <div class="shield-item"><div>🧨</div><div><b>破茧话题包</b><p>一次性的跨领域组合，专门打破"全是你已经懂的东西"的循环。</p></div></div>
+          <div class="note" style="margin-top:14px">噪声只能稀释，不能清零。<b>真正的解法是配合隐私盾 + 持续负反馈</b>。弹药库是辅助，不是主力。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SHIELD ============ -->
+    <section class="page" id="page-shield">
+      <div class="page-head">
+        <div class="eyebrow">DATA HYGIENE</div>
+        <h1>隐私盾清单</h1>
+        <p class="lead">先把新数据的流入关小，驯化才不会被立刻冲掉。按清单逐项做，状态自动保存。</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h2>推荐与广告</h2><span class="pill teal" id="shield-count">0 / 0</span></div>
+          <div id="shield-list-a"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>账号与设备</h2><span class="pill amber">长期习惯</span></div>
+          <div id="shield-list-b"></div>
+        </div>
+      </div>
+      <div class="note teal" style="margin-top:16px"><b>最有效的一条：</b>场景分离。学习/工作用一个浏览器配置文件（B 站、知乎只登录这个），娱乐用另一个。推荐算法拿不到跨场景数据，画像自然不会串。</div>
+    </section>
+
+    <!-- ============ BENCHMARK ============ -->
+    <section class="page" id="page-benchmark">
+      <div class="page-head">
+        <div class="eyebrow">ANONYMOUS BENCHMARK</div>
+        <h1>匿名效果基准</h1>
+        <p class="lead">把一次画像快照匿名化后存入样本池，用来回答一个问题：<b>别人做同类动作，画像真的变了吗？</b> 当前为本地原型，样本只存在此浏览器，未上传。</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>提交匿名样本</h2><span class="pill teal" id="bench-count">0 份样本</span></div>
+        <p class="small muted">只采集八维分数、计划完成率与动作标签；<b>不含身份、不含原始导出文本、不含文件路径</b>。日期模糊到天。</p>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn primary sm" id="btn-bench-submit">记录当前状态为匿名样本</button>
+          <button class="btn ghost sm" id="btn-bench-clear">清空样本池</button>
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-head"><h2>样本池均值</h2><span class="small muted">八维平均画像</span></div>
+          <div id="bench-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>样本记录</h2><button class="btn ghost sm" id="btn-bench-export">导出样本 JSON</button></div>
+          <div id="bench-list"></div>
+        </div>
+      </div>
+      <div class="agg-warn" style="margin-top:16px">样本数少于 20 时，均值没有统计意义。不要拿两三条记录当结论；真正的基准需要跨设备、跨用户的匿名汇总，这一步要等服务端开通。</div>
+    </section>
+
+    <!-- ============ CLOUD ============ -->
+    <section class="page" id="page-cloud">
+      <div class="page-head">
+        <div class="eyebrow">CLOUD SYNC · NOT CONNECTED</div>
+        <h1>云同步</h1>
+        <p class="lead">账号、同步队列、匿名样本的数据结构已按云端接口设计好。当前<b>未接入云服务</b>：没有服务端、没有登录，所有操作只写本地队列。</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>同步状态</h2><span class="cloud-badge">未接入云服务</span></div>
+        <div class="grid g2" style="margin-top:10px">
+          <div><span class="small muted">账号</span><div><b id="cloud-account">本地访客</b></div></div>
+          <div><span class="small muted">待同步操作</span><div><b id="cloud-queue-count">0</b></div></div>
+        </div>
+        <p class="small muted" style="margin-top:12px">开通后需由服务端提供连接配置；前端不会硬编码地址或密钥。确认授权由 WorkBuddy 界面完成，不会在页面里伪造登录。</p>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>本地变更队列</h2><button class="btn ghost sm" id="btn-sync-clear">清空队列</button></div>
+        <p class="small muted">每次画像变更、打卡、导入存档、提交匿名样本都会记一条。开通后可作为增量同步依据。</p>
+        <div id="sync-list" style="margin-top:10px"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>同步内容边界</h2></div>
+        <div class="small muted" style="line-height:1.9">
+          · <b>同步</b>：八维画像、目标、计划与打卡、多源档案的分数与文本指纹、匿名样本。<br>
+          · <b>不同步</b>：官方导出的原始文本、文件路径、平台账号信息。<br>
+          · <b>匿名样本</b>：提交前剔除身份字段，只留八维分数与动作标签。
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DATA ============ -->
+    <section class="page" id="page-data">
+      <div class="page-head">
+        <div class="eyebrow">LOCAL STORAGE</div>
+        <h1>数据管理</h1>
+        <p class="lead">所有画像、打卡、清单状态都写在这个浏览器的 localStorage 里。没有账号，没有云端，没有服务器。</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h2>导出 / 导入</h2>
+          <p class="small muted">导出为 JSON，换设备或清缓存前先备份。</p>
+          <div class="btn-row" style="margin-top:14px">
+            <button class="btn primary" id="btn-export">导出备份</button>
+            <button class="btn" id="btn-import-trigger">导入备份</button>
+            <input type="file" id="file-import" accept="application/json" hidden>
+          </div>
+        </div>
+        <div class="card">
+          <h2>重置</h2>
+          <p class="small muted">清空全部本地数据，恢复到初始画像。不可撤销。</p>
+          <button class="btn" id="btn-reset" style="margin-top:14px;color:var(--rose);border-color:#f3c9d3">清空全部数据</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h2>当前存储快照</h2>
+        <pre class="ammo-box" id="data-snapshot" style="margin-top:12px;min-height:auto"></pre>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ---------------- data ---------------- */
+const DIMS = [
+  {key:"tech",  name:"科技"},
+  {key:"money", name:"财经"},
+  {key:"game",  name:"游戏"},
+  {key:"sport", name:"运动"},
+  {key:"art",   name:"文艺"},
+  {key:"trip",  name:"旅行"},
+  {key:"food",  name:"美食"},
+  {key:"study", name:"学习"}
+];
+
+const PRESETS = {
+  dev:   {name:"硬核开发者", desc:"代码 / 开源 / AI 工具链", v:{tech:92,money:42,game:35,sport:38,art:25,trip:30,food:35,study:86}},
+  fit:   {name:"健身生活家", desc:"训练 / 饮食 / 户外", v:{tech:45,money:35,game:28,sport:94,art:48,trip:70,food:82,study:52}},
+  study: {name:"考研学霸", desc:"专业课 / 文献 / 自律", v:{tech:58,money:35,game:8,sport:28,art:42,trip:16,food:32,study:96}},
+  arts:  {name:"文艺旅行者", desc:"电影 / 摄影 / 城市漫游", v:{tech:30,money:24,game:20,sport:36,art:93,trip:92,food:72,study:48}},
+  invest:{name:"投资理财人", desc:"财报 / 宏观 / 资产配置", v:{tech:66,money:94,game:16,sport:35,art:26,trip:32,food:38,study:74}},
+  gamer: {name:"游戏电竞", desc:"新游 / 赛事 / 硬件", v:{tech:78,money:28,game:96,sport:32,art:22,trip:18,food:48,study:26}}
+};
+
+const KEYWORDS = {
+  tech:["大模型本地部署","Python 自动化脚本","Linux 命令行入门","开源项目推荐","机械键盘选购","Git 协作流程","数据库索引原理","AI 工具效率"],
+  money:["基金定投入门","财报三张表怎么看","通货膨胀与普通人","记账 App 对比","复利是什么意思","央行利率决议解读","大学生理财避坑","资产配置基础"],
+  game:["独立游戏推荐","Steam 史低折扣","电竞比赛赛程","游戏显卡怎么选","开放世界新作","游戏的设计思路","主机入门指南","像素游戏合集"],
+  sport:["居家健身计划","跑步配速训练","蛋白质摄入计算","篮球基本功教学","瑜伽入门动作","健身房器械使用","徒步装备清单","睡眠与恢复"],
+  art:["电影镜头语言","摄影构图技巧","书单推荐","美术馆展览","黑胶唱机入门","手账排版","独立音乐推荐","色彩搭配基础"],
+  trip:["城市步行路线","周边短途旅行","机票错峰购买","青旅避坑","行李打包清单","小众海岛攻略","博物馆打卡","火车旅行体验"],
+  food:["家常菜做法","咖啡豆产区","烘焙入门","减脂餐搭配","本地小吃探店","刀工基础","酱料自制","食物保存技巧"],
+  study:["费曼学习法","英语精听方法","番茄钟实操","论文阅读顺序","笔记系统搭建","记忆曲线复习","公开课推荐","错题本怎么做"]
+};
+
+const TAGS = {
+  tech:["开源贡献","终端效率","前端工程","数据可视化","AI 应用","自建服务","代码整洁"],
+  money:["长期主义","现金流","指数基金","财报分析","风险管理","预算规划"],
+  game:["独立游戏","策略游戏","电竞","硬件发烧","游戏设计","速通"],
+  sport:["力量训练","有氧","户外","康复","运动营养","作息"],
+  art:["胶片摄影","当代艺术","独立电影","阅读","手作","音乐现场"],
+  trip:["城市漫步","自然徒步","文化旅行","轻装出行","公共交通","在地生活"],
+  food:["家庭烹饪","精品咖啡","烘焙","时令食材","街头美食","饮食健康"],
+  study:["深度工作","语言学习","知识管理","学术写作","技能树","复盘"]
+};
+
+const IMPORT_LEXICON = {
+  tech:["python","javascript","java ","linux","git","github","ai ","ai工具","大模型","机器学习","编程","代码","开源","数据库","sql","前端","后端","算法","api","终端","键盘","显卡","电脑","software","developer","coding","programming"],
+  money:["基金","股票","财报","投资","理财","利率","通胀","复利","记账","资产","经济","金融","消费","价格","省钱","fund","invest","finance","stock","budget","money"],
+  game:["游戏","电竞","steam","显卡","主机","switch","playstation","xbox","手游","崩坏","原神","王者","英雄联盟","像素","攻略","gaming","game","esports"],
+  sport:["健身","跑步","篮球","足球","瑜伽","训练","蛋白","肌肉","徒步","游泳","骑行","拉伸","睡眠","运动","workout","fitness","running","gym","sport"],
+  art:["电影","摄影","书单","读书","音乐","画展","美术","手账","设计","色彩","文学","诗","black","film","photo","music","art","book","design","artist"],
+  trip:["旅行","旅游","攻略","机票","酒店","青旅","路线","城市","海岛","博物馆","出行","行李","高铁","火车","travel","trip","hotel","flight","city","museum"],
+  food:["菜谱","做法","咖啡","烘焙","美食","探店","食材","减脂餐","小吃","酱料","烹饪","奶茶","早餐","晚餐","food","recipe","coffee","baking","restaurant","cook"],
+  study:["学习","考研","英语","单词","论文","笔记","番茄钟","复习","公开课","课程","做题","考试","记忆","效率","自习","study","exam","notes","course","language","paper","learning"]
+};
+
+const DATA_SOURCES = [
+  {p:"Google",path:"takeout.google.com → 勾选「我的活动」「YouTube 和 YouTube Music」→ 创建导出 → 解压 ZIP",url:"https://takeout.google.com/"},
+  {p:"YouTube",path:"Takeout → YouTube and YouTube Music → history/watch-history.json 或 watch-history.html；搜索历史为 search-history.json"},
+  {p:"TikTok",path:"设置与隐私 → 隐私 → 下载您的数据 → 请求 JSON 格式导出"},
+  {p:"微信",path:"我 → 设置 → 个人信息与权限 → 个人信息浏览与导出 → 导出个人信息（发邮箱，72 小时内下载）"},
+  {p:"B 站",path:"我的 → 设置 → 个人信息收集清单 → 个人信息下载"},
+  {p:"淘宝",path:"我的淘宝 → 设置 → 隐私 → 个人数据下载"},
+  {p:"抖音",path:"我 → ≡ → 设置 → 隐私设置 → 个人信息与权限 → 导出个人数据（加密 ZIP，解压密码见短信）"},
+  {p:"小红书",path:"设置与隐私 → 账户设置 → 数据管理 → 个人信息导出（每月一次，邮箱收链接）"},
+  {p:"知乎",path:"我的 → 设置 → 隐私中心 → 个人信息下载 → 联系知乎小管家申请"},
+  {p:"Excel 类",path:"平台导出的 .xlsx 先用 Excel / WPS 另存为「CSV UTF-8」，再拖进本页"}
+];
+
+const SHIELD_ITEMS = [
+  {id:"s1", group:"a", title:"关闭抖音个性化推荐", desc:"我 → 设置 → 隐私设置 → 个性化推荐，关闭。同时清一次推荐历史。", url:"https://www.douyin.com/", urlLabel:"打开抖音网页版", copy:"我 → 设置 → 隐私设置 → 个性化推荐"},
+  {id:"s2", group:"a", title:"关闭小红书个性化广告", desc:"我 → 设置 → 隐私设置 → 个性化广告管理 / 广告兴趣标签，清空或关闭。", url:"https://www.xiaohongshu.com/", urlLabel:"打开小红书", copy:"我 → 设置 → 隐私设置 → 个性化广告管理"},
+  {id:"s3", group:"a", title:"B 站清空推荐与搜索历史", desc:"个人中心 → 历史记录，清搜索词；推荐流里对旧标签内容点「不感兴趣」。", url:"https://www.bilibili.com/", urlLabel:"打开 B 站", copy:"个人中心 → 历史记录 → 清空搜索历史"},
+  {id:"s4", group:"a", title:"淘宝/京东关闭个性化推荐", desc:"我的 → 设置 → 隐私 → 个性化推荐，关闭；顺手清空浏览足迹。", url:"https://www.taobao.com/", urlLabel:"打开淘宝", copy:"我的 → 设置 → 隐私 → 个性化推荐"},
+  {id:"s5", group:"a", title:"微信关闭个性化广告", desc:"我 → 设置 → 个人信息与权限 → 个性化广告管理，关闭。", url:"https://weixin.qq.com/", urlLabel:"微信官网", copy:"我 → 设置 → 个人信息与权限 → 个性化广告管理"},
+  {id:"s6", group:"b", title:"重置手机广告标识符", desc:"iOS：设置 → 隐私与安全性 → 跟踪；Android：设置 → 隐私 → 广告 ID → 重置。", copy:"iOS：设置 → 隐私与安全性 → 跟踪\nAndroid：设置 → 隐私 → 广告 ID → 重置"},
+  {id:"s7", group:"b", title:"浏览器关闭第三方 Cookie", desc:"Edge/Chrome：设置 → 隐私 → Cookie → 阻止第三方 Cookie。", copy:"edge://settings/privacy\nchrome://settings/cookies"},
+  {id:"s8", group:"b", title:"收回非必要 App 的定位权限", desc:"只给地图和外卖留「使用时允许」，其余改成「永不」。", copy:"只给地图和外卖：使用时允许\n其余：永不"},
+  {id:"s9", group:"b", title:"建立场景分离账号/配置文件", desc:"学习资料与娱乐刷流用不同浏览器配置文件或不同账号，切断跨场景画像。", url:"https://addons.mozilla.org/zh-CN/firefox/addon/multi-account-containers/", urlLabel:"获取容器插件"},
+  {id:"s10", group:"b", title:"换一个不追踪的搜索入口", desc:"把默认搜索换成 DuckDuckGo / 国内可用时再选无个性化结果的入口。", url:"https://duckduckgo.com/", urlLabel:"打开 DuckDuckGo"},
+  {id:"s11", group:"b", title:"退订营销短信与兴趣推送", desc:"短信里回 T/N 退订，App 推送设置里关掉「猜你喜欢」类通知。", copy:"短信回 T/N 退订\nApp 推送设置 → 关闭「猜你喜欢」"},
+  {id:"s12", group:"b", title:"季度复盘一次画像", desc:"每三个月回来重跑一次诊断，看推荐流是否真的变了。", copy:"重新做八维诊断 → 对比效果追踪曲线"}
+];
+
+const DEFAULT_CURRENT = {tech:62,money:24,game:70,sport:20,art:30,trip:25,food:58,study:38};
+const DEFAULT_TARGET = Object.assign({}, PRESETS.dev.v);
+const KEY = "rewire_cloud_state_v1";
+
+function freshState(){
+  return {
+    current:Object.assign({},DEFAULT_CURRENT),
+    target:Object.assign({},DEFAULT_TARGET),
+    preset:"dev",
+    planLength:7,
+    plan:null,
+    planChecks:{},
+    shield:{},
+    ammoType:"search",
+    ammoSeed:1,
+    evo:{weights:{}, evolved:{}, history:[]},
+    imports:[],
+    snapshots:[],
+    effectDims:["tech","game","study","food"],
+    reminder:{enabled:false,time:"20:00",channels:[],lastSent:""},
+    account:{name:"本地访客"},
+    syncQueue:[],
+    benchSamples:[]
+  };
+}
+let state = loadState();
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return freshState();
+    const s = JSON.parse(raw);
+    const merged = Object.assign(freshState(), s);
+    if(!merged.evo||typeof merged.evo!=="object")merged.evo={weights:{},evolved:{},history:[]};
+    if(!Array.isArray(merged.imports))merged.imports=[];
+    if(!Array.isArray(merged.snapshots))merged.snapshots=[];
+    if(!Array.isArray(merged.effectDims))merged.effectDims=["tech","game","study","food"];
+    if(!merged.reminder||typeof merged.reminder!=="object")merged.reminder={enabled:false,time:"20:00",channels:[],lastSent:""};
+    if(!Array.isArray(merged.reminder.channels))merged.reminder.channels=[];
+    if(!merged.account||typeof merged.account!=="object")merged.account={name:"本地访客"};
+    if(!Array.isArray(merged.syncQueue))merged.syncQueue=[];
+    if(!Array.isArray(merged.benchSamples))merged.benchSamples=[];
+    return merged;
+  }catch(e){ return freshState(); }
+}
+let _syncBaseline=null;
+function syncSnapshot(){
+  return JSON.stringify({c:state.current,t:state.target,p:state.planChecks,i:state.imports.length,b:state.benchSamples.length,s:state.shield});
+}
+function detectSyncChange(){
+  const now=syncSnapshot();
+  if(_syncBaseline===null){_syncBaseline=now;return;}
+  if(now===_syncBaseline)return;
+  const prev=JSON.parse(_syncBaseline),cur=JSON.parse(now);
+  let kind="状态更新";
+  if(JSON.stringify(prev.c)!==JSON.stringify(cur.c))kind="画像更新";
+  else if(JSON.stringify(prev.t)!==JSON.stringify(cur.t))kind="目标更新";
+  else if(JSON.stringify(prev.p)!==JSON.stringify(cur.p))kind="计划打卡";
+  else if(cur.i!==prev.i)kind="导入存档";
+  else if(cur.b!==prev.b)kind="匿名样本";
+  else if(JSON.stringify(prev.s)!==JSON.stringify(cur.s))kind="隐私清单";
+  state.syncQueue.unshift({at:Date.now(),kind});
+  if(state.syncQueue.length>200)state.syncQueue.length=200;
+  _syncBaseline=now;
+}
+function saveState(){
+  detectSyncChange();
+  try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){ toast("保存失败：本地存储不可用"); }
+  if(typeof renderAccount==="function"&&$("#account-name")){ renderAccount(); renderCloud(); }
+}
+function toast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1900);
+}
+const $ = s=>document.querySelector(s);
+const $$ = s=>Array.from(document.querySelectorAll(s));
+const clamp = n=>Math.max(0,Math.min(100,Math.round(n)));
+
+/* ---------------- nav ---------------- */
+function go(page){
+  $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  $$(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+page));
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(page==="data") renderData();
+}
+$("#nav").addEventListener("click",e=>{const b=e.target.closest(".nav-btn"); if(b) go(b.dataset.page);});
+$$("[data-go]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.go)));
+
+/* ---------------- radar ---------------- */
+function polar(cx,cy,r,i,total,val){
+  const a = -Math.PI/2 + i*2*Math.PI/total;
+  const rr = r*val/100;
+  return [cx+rr*Math.cos(a), cy+rr*Math.sin(a)];
+}
+function polyPoints(cx,cy,r,vals){
+  return vals.map((v,i)=>polar(cx,cy,r,i,vals.length,v).map(n=>n.toFixed(1)).join(",")).join(" ");
+}
+function radarSVG(){
+  const W=380,H=330,cx=190,cy=162,r=118,n=DIMS.length;
+  let g="";
+  [20,40,60,80,100].forEach(lv=>{
+    g+=`<polygon points="${polyPoints(cx,cy,r,DIMS.map(()=>lv))}" fill="none" stroke="#e4e8f0" stroke-width="1"/>`;
+  });
+  DIMS.forEach((d,i)=>{
+    const [x,y]=polar(cx,cy,r,i,n,100);
+    g+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e4e8f0" stroke-width="1"/>`;
+    const [lx,ly]=polar(cx,cy,r+24,i,n,100);
+    const anchor = Math.cos(-Math.PI/2+i*2*Math.PI/n)>0.25?"start":(Math.cos(-Math.PI/2+i*2*Math.PI/n)<-0.25?"end":"middle");
+    g+=`<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="${anchor}" font-size="11" fill="#6d768a">${d.name}</text>`;
+  });
+  const tv=DIMS.map(d=>state.target[d.key]);
+  const cv=DIMS.map(d=>state.current[d.key]);
+  g+=`<polygon points="${polyPoints(cx,cy,r,tv)}" fill="rgba(13,148,136,.10)" stroke="#0d9488" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g+=`<polygon points="${polyPoints(cx,cy,r,cv)}" fill="rgba(79,70,229,.14)" stroke="#4f46e5" stroke-width="2"/>`;
+  cv.forEach((v,i)=>{const [x,y]=polar(cx,cy,r,i,n,v);g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#4f46e5"/>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" width="360" aria-label="人格雷达图">${g}</svg>`;
+}
+function renderRadars(){
+  const html=radarSVG();
+  const r1=$("#radar-dash"), r2=$("#radar-profile");
+  if(r1) r1.innerHTML=html;
+  if(r2) r2.innerHTML=html;
+}
+function dimBars(el){
+  el.innerHTML=DIMS.map(d=>{
+    const c=state.current[d.key], t=state.target[d.key];
+    return `<div class="dim-row"><span class="nm">${d.name}</span><span class="bar"><i style="width:${c}%"></i><u style="left:${t}%"></u></span><span class="vl">${c}→${t}</span></div>`;
+  }).join("");
+}
+
+/* ---------------- profile ---------------- */
+function renderProfile(){
+  $("#sliders").innerHTML=DIMS.map(d=>`
+    <div class="slider-item">
+      <label>${d.name}<span id="v-${d.key}">${state.current[d.key]}</span></label>
+      <input type="range" min="0" max="100" step="1" value="${state.current[d.key]}" data-cur="${d.key}">
+    </div>`).join("");
+  $$("[data-cur]").forEach(inp=>inp.addEventListener("input",e=>{
+    state.current[e.target.dataset.cur]=clamp(+e.target.value);
+    $("#v-"+e.target.dataset.cur).textContent=state.current[e.target.dataset.cur];
+    saveState(); renderRadars(); dimBars($("#profile-dims")); dimBars($("#dash-dims")); renderDiagnosis(); renderGaps(); renderStats(); buildPlan(false);
+  }));
+  const avg=Math.round(DIMS.reduce((s,d)=>s+state.current[d.key],0)/8);
+  $("#profile-sum").textContent="均分 "+avg;
+  renderDiagnosis(); renderProfileRisk(); dimBars($("#profile-dims")); renderRadars();
+}
+function renderDiagnosis(){
+  const sorted=DIMS.slice().sort((a,b)=>state.current[b.key]-state.current[a.key]);
+  const top=sorted.slice(0,3).map(d=>d.name).join("、");
+  const low=sorted.slice(-2).map(d=>d.name).join("、");
+  const dom=sorted[0].name, v=state.current[dom.key];
+  let judge = v>=75 ? `算法大概率把你判定为"${dom}重度用户"，首页会被这一类内容占满。`
+            : v>=50 ? `算法把你当"泛${dom}兴趣用户"，推荐流偏单一但还有松动空间。`
+            : "你的信号比较分散，算法还没形成强标签——这是好事，趁现在主动塑形。";
+  $("#diagnosis").innerHTML=`<b>高权重标签：</b>${top}。<br><b>低权重标签：</b>${low}。<br>${judge}<br><br>算法不理解"你是谁"，它只统计<b>你反复做了什么</b>。改变行为样本，画像就会变。`;
+}
+function renderProfileRisk(){
+  const spikes=DIMS.filter(d=>state.current[d.key]>=78);
+  const voids=DIMS.filter(d=>state.current[d.key]<=15);
+  const items=[];
+  if(spikes.length) items.push({t:"标签过度集中",d:`${spikes.map(d=>d.name).join("、")} ≥ 78，推荐流容易坍缩成单一主题。`,p:"rose"});
+  if(voids.length) items.push({t:"信息盲区",d:`${voids.map(d=>d.name).join("、")} ≤ 15，几乎收不到该领域信息。`,p:"amber"});
+  items.push({t:"画像可塑性",d:`当前与目标平均落差 ${Math.round(DIMS.reduce((s,d)=>s+Math.abs(state.target[d.key]-state.current[d.key]),0)/8)} 分，落差越大越需要持续反馈。`,p:"indigo"});
+  $("#profile-risk").innerHTML=items.map(i=>`<div class="card flat" style="padding:10px 12px"><span class="pill ${i.p}">${i.t}</span><div class="small muted" style="margin-top:6px">${i.d}</div></div>`).join("");
+}
+$("#btn-random-profile").addEventListener("click",()=>{
+  DIMS.forEach(d=>state.current[d.key]=20+Math.floor(Math.random()*70));
+  syncProfile(); toast("已填入示例画像");
+});
+$("#btn-zero-profile").addEventListener("click",()=>{
+  DIMS.forEach(d=>state.current[d.key]=0); syncProfile(); toast("已归零");
+});
+function syncProfile(){
+  saveState(); renderProfile(); renderTarget(); renderStats(); dimBars($("#dash-dims")); buildPlan(false);
+}
+
+/* ---------------- target ---------------- */
+function renderTarget(){
+  $("#presets").innerHTML=Object.entries(PRESETS).map(([k,p])=>`
+    <button class="preset ${state.preset===k?"on":""}" data-preset="${k}">
+      <div class="t">${p.name}<span class="pill ${state.preset===k?"teal":""}">${state.preset===k?"使用中":""}</span></div>
+      <div class="d">${p.desc}</div>
+      <div class="tags">${DIMS.slice().sort((a,b)=>p.v[b.key]-p.v[a.key]).slice(0,3).map(d=>`<span class="pill">${d.name} ${p.v[d.key]}</span>`).join("")}</div>
+    </button>`).join("");
+  $$("[data-preset]").forEach(b=>b.addEventListener("click",()=>{
+    state.preset=b.dataset.preset;
+    state.target=Object.assign({},PRESETS[state.preset].v);
+    saveState(); renderTarget(); renderRadars(); dimBars($("#dash-dims")); renderStats(); buildPlan(false);
+    toast("目标已切换："+PRESETS[state.preset].name);
+  }));
+  $("#target-sliders").innerHTML=DIMS.map(d=>`
+    <div class="slider-item">
+      <label>${d.name}<span id="tv-${d.key}">${state.target[d.key]}</span></label>
+      <input type="range" min="0" max="100" step="1" value="${state.target[d.key]}" data-tar="${d.key}">
+    </div>`).join("");
+  $$("[data-tar]").forEach(inp=>inp.addEventListener("input",e=>{
+    const k=e.target.dataset.tar;
+    state.target[k]=clamp(+e.target.value);
+    $("#tv-"+k).textContent=state.target[k];
+    state.preset="custom"; saveState();
+    $$("[data-preset]").forEach(b=>b.classList.remove("on"));
+    $("#target-name").textContent="当前：自定义";
+    renderGaps(); renderRadars(); dimBars($("#dash-dims")); dimBars($("#profile-dims")); renderStats(); buildPlan(false);
+  }));
+  $("#target-name").textContent="当前："+(state.preset==="custom"?"自定义":PRESETS[state.preset].name);
+  renderGaps();
+}
+function renderGaps(){
+  const gaps=DIMS.map(d=>({d,dif:state.target[d.key]-state.current[d.key]})).sort((a,b)=>Math.abs(b.dif)-Math.abs(a.dif));
+  $("#gap-list").innerHTML=gaps.map(g=>{
+    const up=g.dif>0, w=Math.abs(g.dif);
+    return `<div class="gap-item"><span class="g-nm">${g.d.name}</span>
+      <span class="g-track"><i style="left:${up?50:50-w/2}%;width:${w/2}%;background:${up?"#0d9488":"#e11d48"}"></i></span>
+      <span class="g-val" style="color:${up?"var(--teal)":"var(--rose)"}">${up?"+":""}${g.dif}</span></div>`;
+  }).join("");
+  const grow=gaps.filter(g=>g.dif>10).slice(0,2).map(g=>g.d.name);
+  const shrink=gaps.filter(g=>g.dif<-10).slice(0,2).map(g=>g.d.name);
+  $("#target-advice").innerHTML=`<b>驯化重点：</b>${grow.length?"加强 "+grow.join("、"):"无需补强"}
+    ${shrink.length?"；<b>削减：</b>"+shrink.join("、")+"（靠连续点「不感兴趣」）":""}。计划会按这个差值生成。`;
+}
+
+/* ---------------- plan ---------------- */
+function pick(arr,seed){return arr[Math.abs(seed)%arr.length];}
+function buildPlan(regenerate){
+  if(state.plan && !regenerate && state.plan.length===state.planLength) { renderPlan(); return; }
+  const gaps=DIMS.map(d=>({key:d.key,name:d.name,dif:state.target[d.key]-state.current[d.key]}));
+  const grows=gaps.filter(g=>g.dif>10).sort((a,b)=>b.dif-a.dif).slice(0,3);
+  if(!grows.length) gaps.slice().sort((a,b)=>state.target[b.key]-state.target[a.key]).slice(0,2).forEach(g=>grows.push({key:g.key,name:g.name,dif:1}));
+  const shrinks=gaps.filter(g=>g.dif<-10).sort((a,b)=>a.dif-b.dif).slice(0,2);
+  const platforms=["抖音","小红书","B站","浏览器搜索"];
+  const plan=[];
+  const seed=Date.now();
+  for(let d=1;d<=state.planLength;d++){
+    const f1=grows[(d-1)%grows.length];
+    const f2=grows[d%grows.length]||f1;
+    const tasks=[];
+    const kw1=pick(KEYWORDS[f1.key],seed+d*7), kw2=pick(KEYWORDS[f2.key],seed+d*13);
+    tasks.push({type:"search",title:`主动搜索：${kw1}`,detail:`在${platforms[(d-1)%4]}搜索这个词，点开前 3 条结果，每条停留 30 秒以上。目标维度：${f1.name}`});
+    tasks.push({type:"watch",title:`完整看完 1 条「${kw2}」相关内容`,detail:`看完后点赞 + 收藏 + 点"感兴趣"。目标维度：${f2.name}。完播比点击权重更高。`});
+    if(shrinks.length){
+      const s=shrinks[(d-1)%shrinks.length];
+      tasks.push({type:"clean",title:`降权：${s.name} 内容连点 5 次"不感兴趣"`,detail:`在推荐流里主动找 ${s.name} 内容，点"不感兴趣"→"减少此类内容"，并清掉相关搜索历史。旧标签：${s.name}`});
+    }else{
+      tasks.push({type:"follow",title:`关注 2 个「${f1.name}」领域账号`,detail:`挑质量高的账号关注，并在其内容下留 1 条有内容的评论。`});
+    }
+    if(d%3===0){
+      tasks.push({type:"shield",title:"做一项隐私盾清理",detail:`去「隐私盾清单」勾掉一项未完成的设置，阻断新数据继续冲淡驯化效果。`});
+    }
+    plan.push({day:d,focus:[f1.name,f2.name],tasks});
+  }
+  state.plan=plan; state.planChecks={}; saveState(); renderPlan();
+}
+function renderPlan(){
+  const plan=state.plan;
+  if(!plan){ $("#plan-list").innerHTML=`<div class="empty">还没有计划。点上方「重新生成计划」开始。</div>`; return; }
+  let total=0,done=0;
+  const html=plan.map(day=>{
+    const dt=day.tasks.length, dd=day.tasks.filter((_,i)=>state.planChecks[`${day.day}-${i}`]).length;
+    total+=dt; done+=dd;
+    const typeLabel={search:"主动搜索",watch:"完播互动",clean:"负反馈",follow:"关注",shield:"隐私阻断"};
+    return `<div class="card day-card">
+      <div class="day-head"><div><span class="day-num">D${day.day}</span><b>第 ${day.day} 天</b>
+        <span class="small muted" style="margin-left:8px">主攻：${day.focus.join(" + ")}</span></div>
+        <span class="pill ${dd===dt?"teal":""}">${dd}/${dt}</span></div>
+      ${day.tasks.map((t,i)=>{
+        const id=`${day.day}-${i}`, checked=!!state.planChecks[id];
+        return `<label class="task ${checked?"done":""}">
+          <input type="checkbox" data-check="${id}" ${checked?"checked":""}>
+          <div class="task-body"><div class="task-title"><span class="pill" style="margin-right:6px">${typeLabel[t.type]}</span>${t.title}</div>
+          <div class="task-detail">${t.detail}</div></div></label>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+  $("#plan-list").innerHTML=html;
+  $$("[data-check]").forEach(c=>c.addEventListener("change",e=>{
+    state.planChecks[e.target.dataset.check]=e.target.checked; saveState(); renderPlan(); renderStats(); takeSnapshot(false);
+  }));
+  const pct=total?Math.round(done/total*100):0;
+  $("#plan-progress-text").textContent=`${done} / ${total} · ${pct}%`;
+  $("#plan-progress-bar").style.width=pct+"%";
+  $("#btn-plan-length").textContent=`周期为 ${state.planLength} 天`;
+  renderStats();
+}
+$("#btn-gen-plan").addEventListener("click",()=>{buildPlan(true);toast("计划已按当前画像重新生成");});
+$("#btn-plan-length").addEventListener("click",()=>{
+  state.planLength=state.planLength===7?14:7; buildPlan(true);
+  toast("周期已切换为 "+state.planLength+" 天");
+});
+
+/* ---------------- ammo + query evolution ---------------- */
+function seededRandom(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>{s=s*16807%2147483647;return(s-1)/2147483646;};}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+const EVOLVE_TPL=[
+  q=>`${q} 入门`, q=>`${q} 常见误区`, q=>`${q} 怎么做`, q=>`${q} 案例拆解`,
+  q=>`为什么 ${q}`, q=>`${q} 新手指南`, q=>`${q} 实操清单`
+];
+let currentAmmo=[];
+function baseQueryPool(){
+  const out=[];
+  DIMS.forEach(d=>KEYWORDS[d.key].forEach(q=>out.push({text:q,dim:d.key,evolved:false})));
+  Object.entries(state.evo.evolved||{}).forEach(([text,meta])=>out.push({text,dim:meta.dim,evolved:true}));
+  return out;
+}
+function qWeight(q){
+  const w=(state.evo.weights||{})[q.text]??1;
+  return Math.max(.05,w)*(state.target[q.dim]>=60?1.25:1);
+}
+function weightedPick(list,rnd){
+  const total=list.reduce((s,x)=>s+qWeight(x),0);
+  let r=rnd()*total;
+  for(const x of list){r-=qWeight(x);if(r<=0)return x;}
+  return list[list.length-1];
+}
+function generateAmmo(){
+  const rnd=seededRandom(state.ammoSeed*7919+DIMS.reduce((s,d)=>s+state.target[d.key],0));
+  const all=DIMS.map(d=>d.key);
+  const targetKeys=DIMS.slice().sort((a,b)=>state.target[b.key]-state.target[a.key]).slice(0,4).map(d=>d.key);
+  const pool=baseQueryPool();
+  currentAmmo=[];
+  if(state.ammoType==="search"){
+    const evolvedPool=pool.filter(q=>q.evolved);
+    for(let i=0;i<12;i++){
+      const sub=i%3===0?pool.filter(q=>targetKeys.includes(q.dim)):pool;
+      const pick=(evolvedPool.length&&i<2)
+        ?evolvedPool[Math.floor(rnd()*evolvedPool.length)]
+        :weightedPick(sub.length?sub:pool,rnd);
+      currentAmmo.push({text:pick.text,dim:pick.dim,evolved:pick.evolved});
+    }
+  }else if(state.ammoType==="tags"){
+    const used=new Set();
+    let guard=0;
+    while(currentAmmo.length<20&&guard++<500){
+      const k=all[Math.floor(rnd()*all.length)];
+      const t=TAGS[k][Math.floor(rnd()*TAGS[k].length)];
+      if(used.has(t))continue; used.add(t);
+      currentAmmo.push({text:"#"+t,dim:k,evolved:false});
+    }
+  }else{
+    for(let i=0;i<8;i++){
+      const ks=all.slice().sort(()=>rnd()-.5).slice(0,3);
+      currentAmmo.push({text:ks.map(k=>KEYWORDS[k][Math.floor(rnd()*KEYWORDS[k].length)]).join(" / "),dim:ks[0],evolved:false});
+    }
+  }
+  renderAmmo();
+}
+function renderAmmo(){
+  const heads={search:"点开结果并停留 20 秒，再按 ✓ / ✕ 反馈。保留的词会被加强并衍生下一批。",
+    tags:"用于 App 兴趣选择页 / 注册引导 / 关注关键词。",
+    burst:"每组跨 3 个领域，用来打断单一主题循环。"};
+  let html=`<div class="ammo-note">${heads[state.ammoType]}</div>`;
+  currentAmmo.forEach((item,i)=>{
+    const name=(DIMS.find(d=>d.key===item.dim)||{}).name||"—";
+    const tag=item.evolved?'<span class="tag evo">演化</span>':`<span class="tag">${name}</span>`;
+    const fb=state.ammoType==="search"
+      ?`<button class="fb-btn keep" data-fb="keep" data-i="${i}" title="有用：加强并衍生">✓</button><button class="fb-btn drop" data-fb="drop" data-i="${i}" title="淘汰：降低权重">✕</button>`:"";
+    html+=`<div class="ammo-line"><span class="idx">${String(i+1).padStart(2,"0")}</span><span class="q">${escapeHtml(item.text)}</span>${tag}${fb}</div>`;
+  });
+  $("#ammo-box").innerHTML=html;
+  $$("[data-fb]").forEach(b=>b.addEventListener("click",()=>feedback(+b.dataset.i,b.dataset.fb)));
+  renderEvoStats();
+}
+function feedback(i,kind){
+  const item=currentAmmo[i]; if(!item)return;
+  const w=state.evo.weights[item.text]??1;
+  if(kind==="keep"){
+    state.evo.weights[item.text]=Math.min(5,w+1.5);
+    const base=Object.values(KEYWORDS).flat();
+    for(let j=0;j<2;j++){
+      const t=EVOLVE_TPL[Math.floor(Math.random()*EVOLVE_TPL.length)](item.text);
+      if(state.evo.evolved[t]||base.includes(t))continue;
+      state.evo.evolved[t]={dim:item.dim,at:Date.now()};
+      state.evo.weights[t]=1.2;
+    }
+    const keys=Object.keys(state.evo.evolved);
+    if(keys.length>120){
+      keys.sort((a,b)=>(state.evo.weights[a]??1)-(state.evo.weights[b]??1));
+      keys.slice(0,keys.length-120).forEach(k=>{delete state.evo.evolved[k];delete state.evo.weights[k];});
+    }
+    toast("已加强，并衍生下一批查询");
+  }else{
+    state.evo.weights[item.text]=Math.max(.05,w*0.35);
+    toast("已降低该词权重");
+  }
+  state.evo.history.push({text:item.text,verdict:kind,at:Date.now()});
+  if(state.evo.history.length>200)state.evo.history=state.evo.history.slice(-200);
+  saveState(); renderAmmo();
+}
+function renderEvoStats(){
+  if(!$("#evo-stats"))return;
+  const kept=state.evo.history.filter(h=>h.verdict==="keep").length;
+  const dropped=state.evo.history.length-kept;
+  $("#evo-stats").innerHTML=`<span class="pill teal">演化词 ${Object.keys(state.evo.evolved).length}</span>
+    <span class="pill">保留 ${kept}</span><span class="pill">淘汰 ${dropped}</span>
+    <span class="pill amber">加权采样中</span>`;
+}
+$$("[data-ammo]").forEach(b=>b.addEventListener("click",()=>{
+  $$("[data-ammo]").forEach(x=>x.classList.toggle("on",x===b));
+  state.ammoType=b.dataset.ammo; saveState(); generateAmmo();
+}));
+$("#btn-ammo-new").addEventListener("click",()=>{state.ammoSeed++;saveState();generateAmmo();toast("已换一批");});
+$("#btn-evo-reset").addEventListener("click",()=>{
+  if(!confirm("清空所有反馈、权重和演化词？"))return;
+  state.evo={weights:{},evolved:{},history:[]}; state.ammoSeed++;
+  saveState(); generateAmmo(); toast("演化已重置");
+});
+$("#btn-ammo-copy").addEventListener("click",async()=>{
+  const txt=currentAmmo.map(x=>x.text).join("\n");
+  try{await navigator.clipboard.writeText(txt);toast("已复制到剪贴板");}
+  catch(e){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("已复制");}
+});
+
+/* ---------------- effect tracking ---------------- */
+const EFFECT_COLORS={tech:"#4f46e5",money:"#d97706",game:"#e11d48",sport:"#0d9488",art:"#7c3aed",trip:"#2563eb",food:"#f97316",study:"#059669"};
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function planPct(){
+  let t=0,d=0;
+  if(state.plan)state.plan.forEach(day=>day.tasks.forEach((_,i)=>{t++;if(state.planChecks[day.day+"-"+i])d++;}));
+  return t?Math.round(d/t*100):0;
+}
+function closeness(s){
+  const gap=DIMS.reduce((acc,d)=>acc+Math.abs(s.target[d.key]-s.current[d.key]),0)/8;
+  return Math.max(0,Math.round(100-gap));
+}
+function takeSnapshot(force,source){
+  const date=todayStr();
+  const snap={date,current:Object.assign({},state.current),target:Object.assign({},state.target),progress:planPct(),at:Date.now(),source:source||"手动"};
+  const idx=state.snapshots.findIndex(s=>s.date===date);
+  if(idx>=0){ if(!force){state.snapshots[idx].progress=snap.progress;saveState();renderEffect();return false;} state.snapshots[idx]=snap; }
+  else state.snapshots.push(snap);
+  state.snapshots.sort((a,b)=>a.date.localeCompare(b.date));
+  if(state.snapshots.length>180)state.snapshots=state.snapshots.slice(-180);
+  saveState(); renderEffect(); return true;
+}
+function renderEffect(){
+  if(!$("#effect-chart"))return;
+  const snaps=state.snapshots;
+  const last=snaps[snaps.length-1],first=snaps[0];
+  $("#m-close").textContent=last?closeness(last)+" / 100":"—";
+  $("#m-days").textContent=snaps.length;
+  if(last&&first&&snaps.length>1){
+    const drift=DIMS.reduce((a,d)=>a+Math.abs(last.current[d.key]-first.current[d.key]),0)/DIMS.length;
+    $("#m-drift").textContent=(drift>=0?"+":"")+drift.toFixed(1);
+  }else $("#m-drift").textContent="—";
+
+  $("#effect-toggles").innerHTML=DIMS.map(d=>`<button data-dim="${d.key}" class="${state.effectDims.includes(d.key)?"on":""}">${d.name}</button>`).join("");
+  $$("[data-dim]").forEach(b=>b.addEventListener("click",()=>{
+    const k=b.dataset.dim;
+    state.effectDims=state.effectDims.includes(k)?state.effectDims.filter(x=>x!==k):state.effectDims.concat(k);
+    saveState(); renderEffect();
+  }));
+
+  const W=760,H=286,L=36,R=16,T=16,B=34;
+  const iw=W-L-R, ih=H-T-B;
+  let g="";
+  [0,25,50,75,100].forEach(v=>{
+    const y=T+ih-(v/100*ih);
+    g+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#e4e8f0" stroke-width="1"/>`;
+    g+=`<text x="${L-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#98a1b3">${v}</text>`;
+  });
+  const xAt=i=>snaps.length===1?L+iw/2:L+i*iw/(snaps.length-1);
+  const yAt=v=>T+ih-(v/100*ih);
+  state.effectDims.forEach(k=>{
+    const color=EFFECT_COLORS[k]||"#4f46e5";
+    const pts=snaps.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.current[k]).toFixed(1)}`).join(" ");
+    if(pts)g+=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    snaps.forEach((s,i)=>{g+=`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(s.current[k]).toFixed(1)}" r="3" fill="${color}"/>`;});
+  });
+  if(snaps.length>1){
+    const step=Math.max(1,Math.ceil(snaps.length/6));
+    snaps.forEach((s,i)=>{if(i%step===0||i===snaps.length-1)
+      g+=`<text x="${xAt(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10" fill="#98a1b3">${s.date.slice(5)}</text>`;});
+  }else if(snaps.length===1){
+    g+=`<text x="${xAt(0).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10" fill="#98a1b3">${snaps[0].date.slice(5)}</text>`;
+  }
+  $("#effect-chart").innerHTML=snaps.length
+    ?`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" aria-label="画像变化曲线">${g}</svg>`
+    :`<div class="empty">还没有快照。点右上角「记录当前画像」开始。</div>`;
+  $("#effect-legend").innerHTML=state.effectDims.map(k=>`<span><i style="background:${EFFECT_COLORS[k]}"></i>${(DIMS.find(d=>d.key===k)||{}).name||k}</span>`).join("");
+
+  const rows=snaps.slice().reverse().slice(0,14).map(s=>{
+    const top=DIMS.slice().sort((a,b)=>s.current[b.key]-s.current[a.key]).slice(0,3).map(d=>d.name).join("、");
+    return `<tr><td>${s.date}</td><td>${closeness(s)} / 100</td><td>${s.progress}%</td><td>${s.source||"手动"}</td><td>${top}</td>
+      <td><button class="btn ghost sm" data-del-snap="${s.date}">删除</button></td></tr>`;
+  }).join("");
+  $("#snapshot-table").innerHTML=snaps.length
+    ?`<thead><tr><th>日期</th><th>接近度</th><th>计划完成</th><th>来源</th><th>高权重标签</th><th></th></tr></thead><tbody>${rows}</tbody>`
+    :`<tbody><tr><td class="muted">暂无记录</td></tr></tbody>`;
+  $$("[data-del-snap]").forEach(b=>b.addEventListener("click",()=>{
+    state.snapshots=state.snapshots.filter(s=>s.date!==b.dataset.delSnap);
+    saveState(); renderEffect(); toast("已删除该日快照");
+  }));
+}
+$("#btn-add-snapshot").addEventListener("click",()=>{takeSnapshot(true);toast("已记录当前画像");});
+
+/* ---------------- official data import ---------------- */
+let importPreview=null;
+const SKIP_IMPORT_KEYS=new Set(["time","titleUrl","header","activityControls","products","details","id","url","thumbnailUrl","imageFile","audioFiles","locationInfo"]);
+function renderDataSources(){
+  const el=$("#source-list"); if(!el)return;
+  el.innerHTML=DATA_SOURCES.map((s,i)=>`<div class="source-row">
+    <span class="platform">${s.p}</span><span class="path">${s.path}</span>
+    <span>${s.url?`<a class="btn sm" href="${s.url}" target="_blank" rel="noopener noreferrer">打开 ↗</a>`:""}
+      <button class="btn sm" data-src-copy="${i}">复制</button></span>
+  </div>`).join("");
+  $$("[data-src-copy]").forEach(b=>b.addEventListener("click",async()=>{
+    const txt=DATA_SOURCES[+b.dataset.srcCopy].path;
+    try{await navigator.clipboard.writeText(txt);toast("路径已复制");}
+    catch(e){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("路径已复制");}
+  }));
+}
+function pushImportText(value,out){
+  const t=String(value).trim();
+  if(t.length<2||t.length>400)return;
+  if(/^https?:\/\//i.test(t)||/^www\./i.test(t))return;
+  if(/^\d{4}[-/]\d{2}[-/]\d{2}/.test(t))return;
+  out.push(t);
+}
+function collectImportStrings(obj,out,depth){
+  if(depth>6||out.length>=20000)return;
+  if(typeof obj==="string"){pushImportText(obj,out);return;}
+  if(Array.isArray(obj)){obj.slice(0,5000).forEach(v=>collectImportStrings(v,out,depth+1));return;}
+  if(!obj||typeof obj!=="object")return;
+  for(const [k,v] of Object.entries(obj)){
+    if(SKIP_IMPORT_KEYS.has(k))continue;
+    if(typeof v==="string"&&/^(title|snippet|query|text|name|label|keyword|searchterm|searchquery)$/i.test(k)){pushImportText(v,out);continue;}
+    collectImportStrings(v,out,depth+1);
+  }
+}
+function parseImportCSV(text){
+  const lines=text.split(/\r?\n/).slice(0,5000);
+  if(!lines.length)return [];
+  const cellsOf=line=>{
+    const cells=[];let cur="",quoted=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++;}else quoted=!quoted;}
+      else if(c===","&&!quoted){cells.push(cur.trim());cur="";}
+      else cur+=c;
+    }
+    cells.push(cur.trim());return cells;
+  };
+  const head=cellsOf(lines[0]);
+  const idx=head.findIndex(h=>/query|text|title|name|keyword|内容|标题|搜索/i.test(h));
+  return lines.slice(1).map(l=>{const c=cellsOf(l);return (idx>=0?c[idx]:c[0])||"";}).filter(Boolean);
+}
+function parseImportHTML(html){
+  const doc=new DOMParser().parseFromString(html,"text/html");
+  doc.querySelectorAll("script,style").forEach(n=>n.remove());
+  const lines=(doc.body.innerText||doc.body.textContent||"").split(/\r?\n/)
+    .map(x=>x.trim()).filter(x=>x.length>3&&!/^\d{4}[-/]/.test(x))
+    .filter(x=>!/^(YouTube|Search|Chrome|Maps|Google Play)$/i.test(x));
+  return lines.slice(0,20000);
+}
+function textsFromFile(name,text){
+  const ext=name.split(".").pop().toLowerCase();
+  if(ext==="json"){
+    try{const out=[];collectImportStrings(JSON.parse(text),out,0);return out;}catch(e){return [];}
+  }
+  if(ext==="csv")return parseImportCSV(text);
+  if(ext==="html"||ext==="htm")return parseImportHTML(text);
+  return text.split(/\r?\n/).map(x=>x.trim()).filter(x=>x.length>2);
+}
+function hashText(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36);
+}
+function analyzeImportTexts(texts){
+  const counts={}; DIMS.forEach(d=>counts[d.key]=0);
+  const uniq=Array.from(new Set(texts.map(t=>t.toLowerCase()))).slice(0,12000);
+  uniq.forEach(t=>DIMS.forEach(d=>{
+    if(IMPORT_LEXICON[d.key].some(term=>t.includes(term)))counts[d.key]++;
+  }));
+  const hits=DIMS.reduce((s,d)=>s+counts[d.key],0);
+  if(!hits)return null;
+  const max=Math.max.apply(null,DIMS.map(d=>Math.log1p(counts[d.key])));
+  const scores={};
+  DIMS.forEach(d=>{const c=counts[d.key];scores[d.key]=c?Math.round(10+90*Math.log1p(c)/max):5;});
+  return {records:texts.length,uniq:uniq.length,hits,counts,scores,hashes:uniq.map(hashText)};
+}
+function renderImportResult(){
+  const el=$("#import-result"); if(!el)return;
+  if(!importPreview){el.innerHTML="";return;}
+  const r=importPreview;
+  el.innerHTML=`<div class="card flat">
+    <div class="card-head"><b>解析结果</b><span class="pill indigo">${r.records} 条记录 · ${r.hits} 次命中</span></div>
+    <div class="small muted" style="margin-bottom:10px">去重后 ${r.uniq} 条文本。分数按命中频次对数归一化，未命中维度贴 5 分。仅作参考，别照单全收。</div>
+    ${DIMS.map(d=>`<div class="import-dim"><span>${d.name}</span><span class="bar"><i style="width:${r.scores[d.key]}%"></i></span><span class="val">${r.scores[d.key]} <span class="faint">(${r.counts[d.key]})</span></span></div>`).join("")}
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn primary sm" id="btn-apply-import">应用到当前画像</button>
+      <button class="btn sm" id="btn-apply-import-target">设为目标画像</button>
+    </div></div>`;
+  $("#btn-apply-import").addEventListener("click",()=>{
+    state.current=Object.assign({},r.scores); saveState(); syncProfile(); takeSnapshot(true,"导入·"+importPlatform()); toast("已按导出数据更新当前画像");
+  });
+  $("#btn-apply-import-target").addEventListener("click",()=>{
+    state.target=Object.assign({},r.scores); state.preset="custom"; saveState();
+    renderTarget(); renderRadars(); dimBars($("#dash-dims")); dimBars($("#profile-dims")); renderStats(); buildPlan(false); toast("已按导出数据更新目标画像");
+  });
+}
+function guessPlatform(names){
+  const n=(names||[]).join(" ").toLowerCase();
+  if(/youtube|watch-history|search-history/.test(n))return "YouTube";
+  if(/takeout|myactivity|google/.test(n))return "Google";
+  if(/tiktok/.test(n))return "TikTok";
+  if(/douyin|抖音/.test(n))return "抖音";
+  if(/wechat|weixin|微信/.test(n))return "微信";
+  if(/bilibili|b站/.test(n))return "B 站";
+  if(/taobao|淘宝/.test(n))return "淘宝";
+  if(/xhs|xiaohongshu|小红书/.test(n))return "小红书";
+  if(/zhihu|知乎/.test(n))return "知乎";
+  return "通用";
+}
+function importPlatform(){return $("#import-platform").value||guessPlatform(importPreview&&importPreview.files);}
+function fmtTime(ts){const d=new Date(ts);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function aggregateImports(){
+  const list=state.imports; if(!list.length)return null;
+  const seen=new Set(); let dup=0;
+  list.forEach(x=>(x.hashes||[]).forEach(h=>{if(seen.has(h))dup++;else seen.add(h);}));
+  const totalW=list.reduce((s,x)=>s+(x.uniq||0),0)||1;
+  const scores={},spreads={};
+  DIMS.forEach(d=>{
+    scores[d.key]=clamp(list.reduce((s,x)=>s+((x.scores&&x.scores[d.key])||0)*(x.uniq||0),0)/totalW);
+    const vals=list.map(x=>(x.scores&&x.scores[d.key])||0);
+    spreads[d.key]=Math.max.apply(null,vals)-Math.min.apply(null,vals);
+  });
+  const platforms=Array.from(new Set(list.map(x=>x.platform).filter(p=>p&&p!=="通用")));
+  return {scores,spreads,unique:seen.size,dup,platforms,count:list.length};
+}
+function renderMultiSource(){
+  const el=$("#agg-result"); if(!el)return;
+  const agg=aggregateImports();
+  const cover=$("#agg-cover"); if(cover)cover.textContent=(agg?agg.platforms.length:0)+" / 9 渠道";
+  if(!agg){el.innerHTML='<div class="agg-empty">还没有存档。解析数据后点「存入多源档案」。</div>';return;}
+  const conflicts=DIMS.slice().sort((a,b)=>agg.spreads[b.key]-agg.spreads[a.key]).slice(0,3).filter(d=>agg.spreads[d.key]>=30);
+  const warn=conflicts.length
+    ?`<div class="agg-warn">⚠ 跨源分歧：${conflicts.map(d=>d.name+" "+agg.spreads[d.key]+" 分").join("、")}。单源偏差可能主导结论，建议先补第 ${Math.min(agg.platforms.length+1,9)} 个渠道。</div>`
+    :'<div class="small muted" style="margin:8px 0">各来源分歧不大，可据此制定计划。</div>';
+  const rows=state.imports.slice().reverse().map(x=>`<div class="agg-row">
+      <span class="who">${x.platform}</span>
+      <span class="meta">${fmtTime(x.at)} · ${(x.files||[]).join("、")} · ${x.uniq} 条唯一文本 / ${x.hits} 命中</span>
+      <button class="btn ghost sm" data-del-imp="${x.id}">删除</button></div>`).join("");
+  el.innerHTML=`<div class="agg-box">
+    <div class="card-head"><b>聚合画像</b><span class="pill teal">${agg.count} 份档案 · ${agg.unique} 条唯一文本</span></div>
+    <div class="small muted">跨源重复 ${agg.dup} 条。分数按来源唯一文本数加权，不是简单平均。</div>
+    ${DIMS.map(d=>`<div class="agg-dim"><span>${d.name}</span><span class="bar"><i style="width:${agg.scores[d.key]}%"></i></span><span class="val">${agg.scores[d.key]} <span class="faint">±${agg.spreads[d.key]}</span></span></div>`).join("")}
+    ${warn}
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn primary sm" id="btn-agg-apply">应用到当前画像</button>
+      <button class="btn sm" id="btn-agg-target">设为目标画像</button>
+      <button class="btn ghost sm" id="btn-agg-clear">清空档案</button>
+    </div></div>
+    <div style="margin-top:12px"><b class="small">档案列表</b>${rows}</div>`;
+  $("#btn-agg-apply").addEventListener("click",()=>{
+    state.current=Object.assign({},agg.scores); saveState(); syncProfile(); takeSnapshot(true,"多源聚合"); toast("已应用聚合画像");
+  });
+  $("#btn-agg-target").addEventListener("click",()=>{
+    state.target=Object.assign({},agg.scores); state.preset="custom"; saveState();
+    renderTarget(); renderRadars(); dimBars($("#dash-dims")); dimBars($("#profile-dims")); renderStats(); buildPlan(false); toast("已把聚合画像设为目标");
+  });
+  $("#btn-agg-clear").addEventListener("click",()=>{
+    if(!confirm("清空全部多源档案？当前画像与快照不受影响。"))return;
+    state.imports=[]; saveState(); renderMultiSource(); toast("档案已清空");
+  });
+  $$("[data-del-imp]").forEach(b=>b.addEventListener("click",()=>{
+    state.imports=state.imports.filter(x=>x.id!==b.dataset.delImp); saveState(); renderMultiSource(); toast("已删除该档案");
+  }));
+}
+async function handleImportFiles(files){
+  const texts=[];
+  for(const f of files){
+    try{const raw=await f.text(); texts.push.apply(texts,textsFromFile(f.name,raw));}catch(e){}
+  }
+  importPreview=analyzeImportTexts(texts);
+  if(importPreview)importPreview.files=files.map(f=>f.name||"文件");
+  if(!importPreview)toast("没识别到兴趣关键词，换个导出文件试试");
+  renderImportResult();
+}
+$("#import-data-file").addEventListener("change",e=>{
+  const files=Array.from(e.target.files||[]);
+  $("#import-file-list").textContent=files.length?files.map(f=>f.name).join("、"):"尚未选择文件";
+  if(files.length)handleImportFiles(files);
+  e.target.value="";
+});
+const dropZone=$("#drop-zone");
+dropZone.addEventListener("dragover",e=>{e.preventDefault();dropZone.classList.add("over");});
+dropZone.addEventListener("dragleave",()=>dropZone.classList.remove("over"));
+dropZone.addEventListener("drop",e=>{
+  e.preventDefault();dropZone.classList.remove("over");
+  const files=Array.from(e.dataTransfer.files||[]);
+  if(files.length){$("#import-file-list").textContent=files.map(f=>f.name).join("、");handleImportFiles(files);}
+});
+$("#btn-demo-import").addEventListener("click",()=>{
+  const demo=[
+    {header:"Search",title:"Searched for Python 自动化脚本",time:"2026-11-20T10:12:00Z"},
+    {header:"YouTube",title:"Watched video: 费曼学习法 英语精听",time:"2026-11-20T11:00:00Z"},
+    {header:"Search",title:"Searched for 家常菜做法",time:"2026-11-21T08:00:00Z"},
+    {header:"YouTube",title:"Watched video: 咖啡豆产区 入门",time:"2026-11-21T20:00:00Z"},
+    {header:"Search",title:"Searched for 基金定投入门",time:"2026-11-22T09:00:00Z"},
+    {header:"YouTube",title:"Watched video: Linux 命令行技巧",time:"2026-11-22T13:00:00Z"},
+    {header:"Search",title:"Searched for 居家健身计划",time:"2026-11-23T07:00:00Z"},
+    {header:"YouTube",title:"Watched video: 论文阅读顺序",time:"2026-11-23T15:00:00Z"},
+    {header:"Search",title:"Searched for Python 自动化脚本",time:"2026-11-24T10:00:00Z"},
+    {header:"YouTube",title:"Watched video: 烘焙入门",time:"2026-11-24T18:00:00Z"}
+  ];
+  const texts=[]; demo.forEach(o=>collectImportStrings(o,texts,0));
+  importPreview=analyzeImportTexts(texts);
+  if(importPreview)importPreview.files=["示例数据.json"];
+  renderImportResult(); toast("已用示例数据生成预览");
+});
+$("#btn-clear-import").addEventListener("click",()=>{
+  importPreview=null; $("#import-file-list").textContent="尚未选择文件"; renderImportResult(); toast("已清除预览");
+});
+$("#btn-save-import").addEventListener("click",()=>{
+  if(!importPreview){toast("先解析一份导出数据");return;}
+  const r=importPreview, platform=importPlatform();
+  state.imports.push({
+    id:Date.now()+"-"+Math.random().toString(36).slice(2,6),
+    at:Date.now(), platform, files:(r.files||[]).slice(0,8),
+    records:r.records, uniq:r.uniq, hits:r.hits,
+    counts:Object.assign({},r.counts), scores:Object.assign({},r.scores),
+    hashes:(r.hashes||[]).slice(0,3000)
+  });
+  if(state.imports.length>30)state.imports=state.imports.slice(-30);
+  $("#import-platform").value="";
+  saveState(); renderMultiSource(); toast("已存入多源档案：" + platform);
+});
+
+/* ---------------- shield ---------------- */
+function renderShield(){
+  ["a","b"].forEach(g=>{
+    const el=g==="a"?$("#shield-list-a"):$("#shield-list-b");
+    el.innerHTML=SHIELD_ITEMS.filter(i=>i.group===g).map(i=>{
+      const on=!!state.shield[i.id];
+      const actions=[];
+      if(i.url) actions.push(`<a class="btn sm" href="${i.url}" target="_blank" rel="noopener noreferrer">${i.urlLabel||"打开平台"} ↗</a>`);
+      if(i.copy) actions.push(`<button class="btn sm" data-copy="${escapeHtml(i.copy)}">复制路径</button>`);
+      return `<div class="shield-item ${on?"done":""}">
+        <label><input type="checkbox" data-shield="${i.id}" ${on?"checked":""}>
+          <div><b>${i.title}</b><p>${i.desc}</p></div></label>
+        ${actions.length?`<div class="shield-actions">${actions.join("")}</div>`:""}
+      </div>`;
+    }).join("");
+  });
+  $$("[data-shield]").forEach(c=>c.addEventListener("change",e=>{
+    state.shield[e.target.dataset.shield]=e.target.checked; saveState(); renderShield();
+  }));
+  $$("[data-copy]").forEach(b=>b.addEventListener("click",async()=>{
+    const txt=b.dataset.copy;
+    try{await navigator.clipboard.writeText(txt);toast("路径已复制");}
+    catch(err){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("路径已复制");}
+  }));
+  const done=SHIELD_ITEMS.filter(i=>state.shield[i.id]).length;
+  $("#shield-count").textContent=`${done} / ${SHIELD_ITEMS.length}`;
+}
+
+/* ---------------- data ---------------- */
+function renderStats(){
+  const s=$("#s-tasks"); if(!s)return;
+  let total=0,done=0;
+  if(state.plan) state.plan.forEach((d,i)=>d.tasks.forEach((_,j)=>{total++;if(state.planChecks[`${d.day}-${j}`])done++;}));
+  s.textContent=total?Math.round(done/total*100)+"%":"0%";
+  const gaps=DIMS.map(d=>({n:d.name,v:Math.abs(state.target[d.key]-state.current[d.key])})).sort((a,b)=>b.v-a.v);
+  $("#s-gap").textContent=gaps[0].v>0?gaps[0].n:"—";
+  $("#s-days").textContent=state.planLength;
+}
+function renderData(){
+  $("#data-snapshot").textContent=JSON.stringify(state,null,2);
+}
+$("#btn-export").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="rewire-backup-"+new Date().toISOString().slice(0,10)+".json";
+  a.click();URL.revokeObjectURL(a.href);toast("备份已下载");
+});
+$("#btn-import-trigger").addEventListener("click",()=>$("#file-import").click());
+$("#file-import").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const s=JSON.parse(r.result);
+      state=Object.assign(freshState(),s); saveState(); renderAll(); takeSnapshot(false); toast("导入成功");
+    }catch(err){toast("文件格式不对");}
+  };
+  r.readAsText(f); e.target.value="";
+});
+$("#btn-reset").addEventListener("click",()=>{
+  if(!confirm("确定清空全部本地数据？此操作不可撤销。"))return;
+  state=freshState(); saveState(); renderAll(); takeSnapshot(false); toast("已重置");
+});
+
+/* ---------------- optional daily reminder ---------------- */
+function reminderText(){
+  let pending=0;
+  if(state.plan)state.plan.forEach(day=>day.tasks.forEach((_,i)=>{if(!state.planChecks[day.day+"-"+i])pending++;}));
+  return `反骨 REWIRE：今天还有 ${pending} 个驯化任务没打卡。打开应用，花 3 分钟完成主动搜索和负反馈。`;
+}
+function renderReminder(){
+  if(!$("#reminder-toggle"))return;
+  const r=state.reminder;
+  $("#reminder-toggle").checked=!!r.enabled;
+  $("#reminder-time").value=r.time||"20:00";
+  $$("[data-channel]").forEach(c=>c.checked=r.channels.includes(c.dataset.channel));
+  const perm=("Notification" in window)?Notification.permission:"unsupported";
+  const permText=perm==="granted"?"已授权":perm==="denied"?"已拒绝":perm==="default"?"未授权":"不支持";
+  $("#reminder-status").textContent=`渠道：${r.channels.length?r.channels.join(" / "):"未选择"} · 通知权限：${permText} · 后台同步：${("serviceWorker" in navigator)?"需浏览器支持":"不支持"}。提醒时间到时，页面打开且启用通知才会弹出；关掉页面时需已安装 PWA 且浏览器支持 Periodic Sync。`;
+}
+function syncReminderFromUI(){
+  state.reminder.enabled=$("#reminder-toggle").checked;
+  state.reminder.time=$("#reminder-time").value||"20:00";
+  state.reminder.channels=$$("[data-channel]").filter(c=>c.checked).map(c=>c.dataset.channel);
+  saveState(); renderReminder();
+}
+async function enableNotifications(){
+  if(!("Notification" in window)){toast("浏览器不支持系统通知");return false;}
+  if(Notification.permission==="default"){
+    const result=await Notification.requestPermission();
+    if(result!=="granted"){toast("未授权系统通知");return false;}
+  }
+  if(Notification.permission!=="granted"){toast("通知权限未开启，去浏览器设置里改");return false;}
+  if("serviceWorker" in navigator){
+    const reg=await navigator.serviceWorker.ready.catch(()=>null);
+    if(reg&&"periodicSync" in reg){
+      try{await reg.periodicSync.register("rewire-daily-reminder",{minInterval:24*60*60*1000});}catch(e){}
+    }
+  }
+  return true;
+}
+async function showReminder(){
+  const title="反骨 REWIRE · 今日驯化提醒";
+  const body=reminderText();
+  if(!("Notification" in window)||Notification.permission!=="granted"){toast("系统通知未授权，请先在浏览器允许通知");return false;}
+  if("serviceWorker" in navigator){
+    const reg=await navigator.serviceWorker.ready.catch(()=>null);
+    if(reg){
+      try{await reg.showNotification(title,{body,icon:"./icon-192.png",tag:"rewire-daily-reminder",data:{url:"./index.html"}});toast("测试提醒已发送");return true;}catch(e){}
+    }
+  }
+  try{new Notification(title,{body});toast("测试提醒已发送");return true;}catch(e){toast("当前浏览器无法弹出通知");return false;}
+}
+function buildICS(){
+  const r=state.reminder;
+  const now=new Date();
+  const date=now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0");
+  const hhmm=(r.time||"20:00").replace(":","");
+  const stamp=now.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+  return [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//REWIRE//Daily Reminder//CN","CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT","UID:rewire-"+(r.time||"2000")+"-"+date+"@local","DTSTAMP:"+stamp,
+    "DTSTART:"+date+"T"+hhmm+"00","DURATION:PT15M","RRULE:FREQ=DAILY;COUNT="+state.planLength,
+    "SUMMARY:反骨 REWIRE · 今日驯化打卡","DESCRIPTION:打开应用完成主动搜索、完播互动与负反馈任务","END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+}
+$("#reminder-toggle").addEventListener("change",async()=>{
+  const wants=$("#reminder-toggle").checked;
+  if(wants&&$$("[data-channel]").some(c=>c.dataset.channel==="notification"&&c.checked))await enableNotifications();
+  syncReminderFromUI(); toast(wants?"每日提醒已开启":"每日提醒已关闭");
+});
+$("#reminder-time").addEventListener("change",syncReminderFromUI);
+$$("[data-channel]").forEach(c=>c.addEventListener("change",async()=>{
+  if(c.checked&&c.dataset.channel==="notification")await enableNotifications();
+  syncReminderFromUI();
+}));
+$("#btn-test-reminder").addEventListener("click",()=>showReminder());
+$("#btn-download-ics").addEventListener("click",()=>{
+  syncReminderFromUI();
+  const blob=new Blob([buildICS()],{type:"text/calendar;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="rewire-daily-reminder.ics";a.click();URL.revokeObjectURL(a.href);
+  toast("日历文件已下载，导入手机/电脑日历即可");
+});
+$("#btn-mail-reminder").addEventListener("click",()=>{
+  const subject=encodeURIComponent("反骨 REWIRE · 今日驯化提醒");
+  const body=encodeURIComponent(reminderText()+"\n\n打开应用："+location.href);
+  window.location.href="mailto:?subject="+subject+"&body="+body;
+});
+$("#btn-copy-reminder").addEventListener("click",async()=>{
+  const txt=reminderText();
+  try{await navigator.clipboard.writeText(txt);toast("提醒文案已复制");}
+  catch(e){const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("提醒文案已复制");}
+});
+setInterval(()=>{
+  const r=state.reminder;
+  if(!r.enabled||!r.channels.includes("notification"))return;
+  const d=new Date();
+  const hm=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  if(hm===r.time&&r.lastSent!==todayStr()){
+    r.lastSent=todayStr(); saveState(); showReminder();
+  }
+},30000);
+
+/* ---------------- pwa ---------------- */
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=$("#btn-install"); if(b)b.style.display="inline-flex";
+});
+$("#btn-install").addEventListener("click",async()=>{
+  if(!deferredPrompt){toast("请用浏览器菜单安装到桌面");return;}
+  deferredPrompt.prompt();
+  const choice=await deferredPrompt.userChoice;
+  deferredPrompt=null; $("#btn-install").style.display="none";
+  toast(choice.outcome==="accepted"?"已安装到桌面":"已取消");
+});
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  navigator.serviceWorker.register("./sw.js")
+    .then(()=>{const b=$("#offline-badge");if(b)b.style.display="inline";})
+    .catch(()=>{});
+}
+
+/* ---------------- cloud prototype: account / sync / benchmark ---------------- */
+function renderAccount(){
+  const name=state.account&&state.account.name||"本地访客";
+  $("#account-name").textContent=name;
+  $("#account-avatar").textContent=name.slice(0,1);
+  $("#account-sub").textContent="未登录 · 数据只在此浏览器";
+  $("#cloud-account").textContent=name;
+  $("#cloud-queue-count").textContent=state.syncQueue.length;
+}
+function renderCloud(){
+  const el=$("#sync-list"); if(!el)return;
+  if(!state.syncQueue.length){el.innerHTML='<div class="agg-empty">暂无变更记录。改画像、打卡或提交样本后会出现在这里。</div>';return;}
+  el.innerHTML=state.syncQueue.slice(0,30).map(x=>`<div class="sync-row"><span class="when">${new Date(x.at).toLocaleString("zh-CN",{hour12:false}).slice(0,16)}</span><span class="what">${x.kind}</span></div>`).join("");
+}
+function renderBenchmark(){
+  const samples=state.benchSamples;
+  $("#bench-count").textContent=samples.length+" 份样本";
+  const bars=$("#bench-bars"), list=$("#bench-list");
+  if(!samples.length){
+    bars.innerHTML='<div class="agg-empty">还没有样本。点上面按钮记录一次当前状态。</div>';
+    list.innerHTML='<div class="agg-empty">样本池为空。</div>';
+    return;
+  }
+  bars.innerHTML=DIMS.map(d=>{
+    const mean=Math.round(samples.reduce((s,x)=>s+(x.current[d.key]||0),0)/samples.length);
+    return `<div class="bench-dim"><span>${d.name}</span><span class="bar"><i style="width:${mean}%"></i></span><span class="val">${mean}</span></div>`;
+  }).join("");
+  list.innerHTML=samples.slice().reverse().slice(0,20).map(x=>`<div class="sample-row">
+    <span class="when">${x.date}</span>
+    <span class="who">${DIMS.slice().sort((a,b)=>x.current[b.key]-x.current[a.key]).slice(0,2).map(d=>d.name).join("、")} · 完成 ${x.progress}%</span>
+    <button class="btn ghost sm" data-del-bench="${x.id}">删除</button></div>`).join("");
+  $$("[data-del-bench]").forEach(b=>b.addEventListener("click",()=>{
+    state.benchSamples=state.benchSamples.filter(x=>x.id!==b.dataset.delBench);
+    saveState(); renderAll(); toast("已删除该样本");
+  }));
+}
+$("#btn-bench-submit").addEventListener("click",()=>{
+  state.benchSamples.push({
+    id:Date.now()+"-"+Math.random().toString(36).slice(2,6),
+    date:todayStr(),
+    current:Object.assign({},state.current),
+    progress:planPct(),
+    at:Date.now()
+  });
+  if(state.benchSamples.length>500)state.benchSamples=state.benchSamples.slice(-500);
+  saveState(); renderAll(); toast("已提交一份匿名样本");
+});
+$("#btn-bench-clear").addEventListener("click",()=>{
+  if(!confirm("清空本地样本池？此操作不可撤销。"))return;
+  state.benchSamples=[]; saveState(); renderAll(); toast("样本池已清空");
+});
+$("#btn-bench-export").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(state.benchSamples,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="rewire-benchmark-"+todayStr()+".json";a.click();URL.revokeObjectURL(a.href);
+  toast("样本 JSON 已下载");
+});
+$("#btn-sync-clear").addEventListener("click",()=>{
+  state.syncQueue=[]; saveState(); renderAll(); toast("同步队列已清空");
+});
+
+/* ---------------- boot ---------------- */
+function renderAll(){
+  renderProfile(); renderTarget(); renderRadars(); dimBars($("#dash-dims"));
+  renderPlan(); renderReminder(); generateAmmo(); renderShield(); renderStats(); renderEffect(); renderData(); renderDataSources(); renderMultiSource();
+  renderAccount(); renderCloud(); renderBenchmark();
+  $$("[data-ammo]").forEach(b=>b.classList.toggle("on",b.dataset.ammo===state.ammoType));
+}
+if(!state.plan) buildPlan(false);
+renderAll();
+takeSnapshot(false);
+</script>
+</body>
+</html>
