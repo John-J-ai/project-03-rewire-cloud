@@ -20,6 +20,13 @@ create table if not exists public.bench_samples (
   at timestamptz not null
 );
 
+-- 表级权限：anon 角色必须有 GRANT 才能走 REST（RLS 只做行级过滤）
+grant usage on schema public to anon;
+grant select, insert on public.sync_events to anon;
+grant select, insert on public.bench_samples to anon;
+grant usage, select on sequence public.sync_events_id_seq to anon;
+grant usage, select on sequence public.bench_samples_id_seq to anon;
+
 alter table public.sync_events enable row level security;
 alter table public.bench_samples enable row level security;
 

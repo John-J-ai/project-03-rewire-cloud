@@ -22,9 +22,11 @@
 1. 注册 <https://supabase.com>，用 `johnj0706@outlook.com`。**不要绑卡**，用 Free plan。
 2. 新建 Project（区域任选，建议离自己近的）；等状态变 Active。
 3. 左侧 **SQL Editor → New query**，粘贴本仓库 `supabase-schema.sql` 全部内容，点 Run。建两张表 + RLS 策略。
-4. **Project Settings → API**：复制 `Project URL` 和 `anon public` key。
-5. 打开应用 →「云同步」页 → 填 URL + anon key →「保存并测试连接」。成功即可推送。
+4. **Project Settings → API Keys**：复制 `Publishable key`（新版 `sb_publishable_...`）或旧版 `anon key`（`eyJ...`）。**不要**用 `Secret keys` / `service_role`。
+5. 打开应用 →「云同步」页 → 填 URL + publishable key →「保存并测试连接」。成功即可推送。
 6. 打卡/改画像后，点「推送变更队列」；「匿名基准」页点「记录样本」→「上传到云端」→ 云同步页「拉取云端样本均值」。
+
+> ⚠️ 建表时若没勾「Grant API access to new tables automatically」，RLS 策略不会自动给 anon 表权限，REST 会返回 401 `permission denied`。`supabase-schema.sql` 已包含 `GRANT` 语句；已执行过旧版脚本的项目需补跑其中的 GRANT 部分。
 
 **关键安全边界**
 - 只填 **anon / public key**。service_role key 可绕过 RLS，绝不贴进前端。anon key 本身是公开可用的，设计如此。

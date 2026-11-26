@@ -1714,7 +1714,7 @@ function renderBackendUI(){
 $("#btn-sb-connect").addEventListener("click",async()=>{
   const url=$("#sb-url").value.trim().replace(/\/+$/,""), key=$("#sb-key").value.trim();
   if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){sbStatus("URL 格式应为 https://xxxx.supabase.co","err");return;}
-  if(!/^eyJ/.test(key)){sbStatus("anon key 应以 eyJ 开头；确认复制的是 anon/public key，不是 service_role。","err");return;}
+  if(!/^(eyJ|sb_publishable_)/.test(key)){sbStatus("只接受 publishable/anon key（sb_publishable_ 或 eyJ 开头）；不要贴 service_role。","err");return;}
   state.backend.url=url; state.backend.key=key; saveState(); renderBackendUI();
   sbStatus("正在测试连接…","");
   try{
@@ -1732,7 +1732,8 @@ $("#btn-sync-push").addEventListener("click",async()=>{
   if(!rows.length){toast("没有待推送的变更");return;}
   const payload=rows.map(x=>({cid:state.backend.clientId,kind:x.kind,at:new Date(x.at).toISOString()}));
   try{
-    await sbRequest("/sync_events?on_conflict=cid,at",{method:"POST",headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(payload)});
+    // 纯 INSERT：本地 synced 标记已去重，且 sync_events 不给 anon SELECT 权限（RLS 不读）
+    await sbRequest("/sync_events",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
     rows.forEach(x=>x.synced=true);
     state.backend.lastPush=new Date().toLocaleString("zh-CN",{hour12:false});
     saveState(); renderAll(); toast("已推送 "+rows.length+" 条变更");
