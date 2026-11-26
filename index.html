@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>反骨 REWIRE · 互联网人格重塑实验室</title>
+<link rel="icon" href="data:,">
 <style>
 :root{
   --bg:#f5f7fb; --surface:#ffffff; --surface-2:#fafbfd; --border:#e4e8f0;
@@ -64,6 +65,17 @@ a{color:var(--accent);text-decoration:none}
 .sb-status{margin-top:10px;font-size:12px;padding:8px 10px;border-radius:8px;background:var(--surface-2);color:var(--muted)}
 .sb-status.ok{background:var(--teal-soft);color:var(--teal)}
 .sb-status.err{background:var(--rose-soft);color:var(--rose)}
+.sb-status.demo{background:var(--amber-soft);color:var(--amber)}
+.demo-banner{display:none;align-items:center;gap:12px;padding:10px 14px;margin-bottom:16px;border:1px solid #f5d7a1;border-radius:10px;background:var(--amber-soft);color:#8a5a06;font-size:12px}
+body.demo-on .demo-banner{display:flex}
+.demo-banner .btn{margin-left:auto;flex:0 0 auto}
+.demo-toggle{margin-top:12px;width:100%;border:1px dashed var(--border);background:var(--surface-2);color:var(--muted);padding:8px;border-radius:9px;font-size:12px;font-weight:650}
+.demo-toggle:hover{border-color:var(--amber);color:var(--amber)}
+body.demo-on .demo-toggle{border-color:var(--amber);color:var(--amber);background:var(--amber-soft)}
+.bench-conf{margin-top:12px;padding:10px 12px;border-radius:9px;background:var(--surface-2);font-size:12px;color:var(--muted)}
+.bench-conf.low{background:var(--amber-soft);color:var(--amber)}
+.bench-conf.mid{background:var(--accent-soft);color:var(--accent)}
+.bench-conf.good{background:var(--teal-soft);color:var(--teal)}
 .sample-row .tag{font-size:10px;color:var(--accent);margin-left:6px}
 .sample-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 0;border-top:1px solid var(--border);font-size:12px}
 .sample-row:first-of-type{border-top:0}
@@ -305,10 +317,12 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
       <button class="nav-btn" data-page="cloud"><span class="ico">☁</span>云同步</button>
       <button class="nav-btn" data-page="data"><span class="ico">⌘</span>数据管理</button>
     </nav>
+    <button class="demo-toggle" id="btn-demo-toggle">▶ 进入演示模式</button>
     <div class="side-foot"><span class="cloud-badge" id="backend-badge">◌ 未接入云服务</span><br><span id="offline-badge" class="local-badge" style="display:none;margin-top:6px">● 可离线使用</span><br>可填 Supabase URL + anon key 连接免费后端；不填则纯本地原型。</div>
   </aside>
 
   <main class="main">
+    <div class="demo-banner" id="demo-banner"><span><b>演示模式</b>：当前展示内置示例数据，不连接真实 Supabase，也不写入你的本地档案。可在云同步页体验推送/上传/拉取的模拟流程。</span><button class="btn sm" id="btn-demo-exit">退出演示</button></div>
     <div class="account-bar">
       <div class="account-avatar" id="account-avatar">游</div>
       <div class="account-meta"><b id="account-name">本地访客</b><span id="account-sub">未登录 · 数据只在此浏览器</span></div>
@@ -589,7 +603,14 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
           <div id="bench-list"></div>
         </div>
       </div>
-      <div class="agg-warn" style="margin-top:16px">样本数少于 20 时，均值没有统计意义。云端均值来自所有接入者的匿名样本，仍不等于科学结论。公开基准需明确告知参与者，并遵守所在地数据规则。</div>
+      <div class="bench-conf" id="bench-confidence">样本量未知。</div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h2>让基准真正可用</h2><span class="pill amber">贡献引导</span></div>
+        <p class="small muted">这个基准不是科学实验，但样本越多越有参考价值。邀请别人使用时，把下面这段话一起发出去——它把数据边界与不确定性讲清楚了，避免误导。</p>
+        <div class="small mono" id="share-copy-text" style="margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--surface-2);line-height:1.8"></div>
+        <div class="btn-row" style="margin-top:10px"><button class="btn sm" id="btn-share-copy">复制邀请文案</button><span class="small muted" id="share-hint">复制后可直接发到群里或写进 README。</span></div>
+      </div>
+      <div class="agg-warn" style="margin-top:12px">样本数少于 20 时，均值没有统计意义。云端均值来自所有接入者的匿名样本，仍不等于科学结论。公开基准需明确告知参与者，并遵守所在地数据规则。</div>
     </section>
 
     <!-- ============ CLOUD ============ -->
@@ -598,6 +619,7 @@ input[type=range]{width:100%;accent-color:var(--accent);height:5px}
         <div class="eyebrow">CLOUD SYNC · SUPABASE FREE</div>
         <h1>云同步</h1>
         <p class="lead">填自己的 Supabase 免费项目地址与 <b>anon key</b> 即可真实推送变更与匿名样本。不填则纯本地原型。前端不硬编码任何地址或密钥。</p>
+        <div class="sb-status demo" id="demo-cloud-note" style="display:none;margin-top:12px">演示模式：下方推送、上传、拉取均为模拟，不发出任何网络请求。退出演示后需用你自己的 Supabase 配置重新连接。</div>
       </div>
       <div class="card">
         <div class="card-head"><h2>连接配置</h2><span class="cloud-badge" id="cloud-badge">未连接</span></div>
@@ -758,6 +780,9 @@ const SHIELD_ITEMS = [
 const DEFAULT_CURRENT = {tech:62,money:24,game:70,sport:20,art:30,trip:25,food:58,study:38};
 const DEFAULT_TARGET = Object.assign({}, PRESETS.dev.v);
 const KEY = "rewire_cloud_state_v1";
+const DEMO_KEY = "rewire_cloud_demo_v1";
+let demoMode = false;
+let demoMemory = null;
 
 function freshState(){
   return {
@@ -776,13 +801,73 @@ function freshState(){
     effectDims:["tech","game","study","food"],
     reminder:{enabled:false,time:"20:00",channels:[],lastSent:""},
     account:{name:"本地访客"},
+    demo:false,
     syncQueue:[],
     benchSamples:[],
     backend:{url:"",key:"",clientId:"c-"+Math.random().toString(36).slice(2,10),lastPush:"",cloudMean:null,cloudCount:0}
   };
 }
+/* 演示数据：纯内存，与真实档案完全隔离；刷新后回到同一份示例。 */
+function buildDemoState(){
+  const s=freshState(), now=Date.now();
+  s.demo=true;
+  s.current={tech:58,money:30,game:76,sport:22,art:28,trip:24,food:62,study:34};
+  s.target=Object.assign({},PRESETS.dev.v);
+  s.preset="dev";
+  s.account={name:"演示用户"};
+  s.syncQueue=[
+    {at:now-8*60000,kind:"画像更新",synced:true},
+    {at:now-26*60000,kind:"计划打卡",synced:true},
+    {at:now-50*60000,kind:"匿名样本",synced:false},
+    {at:now-95*60000,kind:"导入存档",synced:false},
+    {at:now-140*60000,kind:"隐私清单",synced:true}
+  ];
+  s.backend={url:"https://demo.supabase.local",key:"sb_publishable_demo",clientId:"c-demo-001",lastPush:"今日 15:42",cloudMean:null,cloudCount:128};
+  s.shield={s1:true,s2:true,s7:true,s9:true};
+  s.evo={
+    weights:{"大模型本地部署 入门":3.2,"Python 自动化脚本 常见误区":2.6},
+    evolved:{"大模型本地部署 入门":{dim:"tech",at:now-3600000},"Python 自动化脚本 常见误区":{dim:"tech",at:now-7200000}},
+    history:[{text:"大模型本地部署",verdict:"keep",at:now-3600000},{text:"Steam 史低折扣",verdict:"drop",at:now-7200000},{text:"Python 自动化脚本",verdict:"keep",at:now-10800000}]
+  };
+  const mk=(platform,files,uniq,hits,scores)=>({
+    id:"demo-"+platform,platform,files,uniq,hits,scores,
+    hashes:Array.from({length:uniq},(_,i)=>"demo-"+platform+"-"+i),at:now-uniq*3600000
+  });
+  s.imports=[
+    mk("YouTube",["watch-history.json"],128,96,{tech:64,money:22,game:82,sport:18,art:30,trip:20,food:44,study:38}),
+    mk("B 站",["bili-history.csv"],86,71,{tech:58,money:28,game:74,sport:24,art:34,trip:22,food:56,study:32}),
+    mk("微信",["wechat-export.json"],42,33,{tech:52,money:34,game:68,sport:26,art:30,trip:28,food:70,study:36})
+  ];
+  const prog=[12,24,38,50,61,70,76];
+  s.snapshots=prog.map((p,i)=>{
+    const d=new Date(now-(6-i)*86400000);
+    const date=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    return {date,current:{tech:58+i,money:30,game:76-i*2,sport:22+i,art:28,trip:24,food:62-i,study:34+i*2},
+      target:Object.assign({},s.target),progress:p,at:d.getTime(),source:i===6?"手动":"计划打卡"};
+  });
+  s.benchSamples=s.snapshots.slice(1).map((snap,i)=>({id:"demo-bench-"+i,date:snap.date,current:Object.assign({},snap.current),progress:snap.progress,at:snap.at,uploaded:i<4}));
+  s.backend.cloudMean={tech:66,money:38,game:58,sport:34,art:36,trip:32,food:52,study:54};
+  const demoPlan=[
+    ["主动搜索：大模型本地部署","完整看完 1 条「Python 自动化脚本」相关内容","降权：游戏 内容连点 5 次「不感兴趣」"],
+    ["主动搜索：Linux 命令行入门","完整看完 1 条「开源项目推荐」相关内容","降权：美食 内容连点 5 次「不感兴趣」"],
+    ["主动搜索：Git 协作流程","完整看完 1 条「数据库索引原理」相关内容","做一项隐私盾清理"],
+    ["主动搜索：AI 工具效率","完整看完 1 条「费曼学习法」相关内容","关注 2 个「科技」领域账号"],
+    ["主动搜索：前端工程实践","完整看完 1 条「笔记系统搭建」相关内容","降权：游戏 内容连点 5 次「不感兴趣」"],
+    ["主动搜索：自建服务指南","完整看完 1 条「深度工作」相关内容","关注 2 个「学习」领域账号"],
+    ["主动搜索：代码整洁之道","完整看完 1 条「复盘方法」相关内容","做一项隐私盾清理"]
+  ];
+  s.plan=demoPlan.map((t,i)=>({day:i+1,focus:i<5?["科技","学习"]:["学习","科技"],
+    tasks:t.map((title,j)=>({type:j===0?"search":j===1?"watch":((i===2||i===6)?"shield":(i===3||i===5)?"follow":"clean"),
+      title,detail:"演示任务：展示计划卡片的交互形式，无需真实执行。"}))}));
+  s.planChecks={};
+  for(let d=1;d<=5;d++)for(let i=0;i<3;i++)s.planChecks[d+"-"+i]=true;
+  s.planChecks["6-0"]=true;
+  return s;
+}
+
 let state = loadState();
 function loadState(){
+  if(demoMode) return demoMemory ? JSON.parse(JSON.stringify(demoMemory)) : buildDemoState();
   try{
     const raw = localStorage.getItem(KEY);
     if(!raw) return freshState();
@@ -826,7 +911,9 @@ function detectSyncChange(){
 }
 function saveState(){
   detectSyncChange();
-  try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){ toast("保存失败：本地存储不可用"); }
+  if(!demoMode){
+    try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){ toast("保存失败：本地存储不可用"); }
+  }
   if(typeof renderAccount==="function"&&$("#account-name")){ renderAccount(); renderCloud(); }
 }
 function toast(msg){
@@ -1674,7 +1761,8 @@ if("serviceWorker" in navigator && location.protocol!=="file:"){
 }
 
 /* ---------------- supabase adapter (REST, no SDK) ---------------- */
-function sbReady(){return !!(state.backend.url&&state.backend.key);}
+function sbReady(){return demoMode||!!(state.backend.url&&state.backend.key);}
+function sbIsDemo(){return !!demoMode;}
 function sbBase(){return state.backend.url.replace(/\/+$/,"")+"/rest/v1";}
 function sbHeaders(extra){
   return Object.assign({
@@ -1700,18 +1788,20 @@ function sbStatus(msg,cls){
 }
 function renderBackendUI(){
   const ok=sbReady();
-  $("#cloud-badge").textContent=ok?"已连接":"未连接";
+  $("#cloud-badge").textContent=demoMode?"演示数据":(ok?"已连接":"未连接");
   $("#cloud-badge").className=ok?"pill teal":"cloud-badge";
-  $("#backend-badge").textContent=ok?"● 已连接 Supabase":"◌ 未接入云服务";
+  $("#backend-badge").textContent=demoMode?"◈ 演示模式 · 模拟数据":(ok?"● 已连接 Supabase":"◌ 未接入云服务");
   $("#backend-badge").className=ok?"local-badge":"cloud-badge";
-  $("#account-cloud-badge").textContent=ok?"● 已连接":"未接入云服务";
+  $("#account-cloud-badge").textContent=demoMode?"◈ 演示模式":(ok?"● 已连接":"未接入云服务");
   $("#account-cloud-badge").className=ok?"local-badge":"cloud-badge";
-  $("#sb-url").value=state.backend.url; $("#sb-key").value=state.backend.key;
+  if(!demoMode){$("#sb-url").value=state.backend.url; $("#sb-key").value=state.backend.key;}
   $("#cloud-last-push").textContent=state.backend.lastPush||"—";
-  if(!ok)sbStatus("未配置。所有数据只写本地。","");
+  if(demoMode)sbStatus("演示模式：云端操作为模拟，不发出网络请求。","demo");
+  else if(!ok)sbStatus("未配置。所有数据只写本地。","");
   if(typeof renderBenchmark==="function"&&$("#btn-bench-upload"))renderBenchmark();
 }
 $("#btn-sb-connect").addEventListener("click",async()=>{
+  if(demoMode){sbStatus("演示模式不连接真实后端。请先退出演示模式。","demo");toast("请先退出演示模式");return;}
   const url=$("#sb-url").value.trim().replace(/\/+$/,""), key=$("#sb-key").value.trim();
   if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){sbStatus("URL 格式应为 https://xxxx.supabase.co","err");return;}
   if(!/^(eyJ|sb_publishable_)/.test(key)){sbStatus("只接受 publishable/anon key（sb_publishable_ 或 eyJ 开头）；不要贴 service_role。","err");return;}
@@ -1723,10 +1813,18 @@ $("#btn-sb-connect").addEventListener("click",async()=>{
   }catch(e){ sbStatus("连接失败："+e.message+"（检查 SQL 是否已执行、anon 读权限是否开启）","err"); toast("连接失败"); }
 });
 $("#btn-sb-disconnect").addEventListener("click",()=>{
+  if(demoMode){sbStatus("演示模式无可断开的真实连接。请先退出演示模式。","demo");toast("请先退出演示模式");return;}
   state.backend.url=""; state.backend.key=""; state.backend.cloudMean=null; state.backend.cloudCount=0;
   saveState(); renderBackendUI(); renderBenchmark(); sbStatus("已断开。所有数据只写本地。",""); toast("已断开");
 });
 $("#btn-sync-push").addEventListener("click",async()=>{
+  if(demoMode){
+    const rows=state.syncQueue.filter(x=>!x.synced);
+    if(!rows.length){toast("演示：没有待推送的变更");return;}
+    rows.forEach(x=>x.synced=true);
+    state.backend.lastPush=new Date().toLocaleString("zh-CN",{hour12:false});
+    saveState();renderAll();toast("演示：已模拟推送 "+rows.length+" 条变更（未联网）");return;
+  }
   if(!sbReady()){toast("先在上方连接 Supabase");return;}
   const rows=state.syncQueue.filter(x=>!x.synced);
   if(!rows.length){toast("没有待推送的变更");return;}
@@ -1740,6 +1838,13 @@ $("#btn-sync-push").addEventListener("click",async()=>{
   }catch(e){toast("推送失败："+e.message);}
 });
 $("#btn-bench-upload").addEventListener("click",async()=>{
+  if(demoMode){
+    const rows=state.benchSamples.filter(x=>!x.uploaded);
+    if(!rows.length){toast("演示：没有未上传的样本");return;}
+    rows.forEach(x=>x.uploaded=true);
+    state.backend.cloudCount+=rows.length;
+    saveState();renderBenchmark();toast("演示：已模拟上传 "+rows.length+" 份样本（未联网）");return;
+  }
   if(!sbReady()){toast("先在云同步页连接 Supabase");return;}
   const rows=state.benchSamples.filter(x=>!x.uploaded);
   if(!rows.length){toast("没有未上传的样本");return;}
@@ -1758,6 +1863,7 @@ $("#btn-bench-upload").addEventListener("click",async()=>{
   }catch(e){toast("上传失败："+e.message);}
 });
 $("#btn-sb-pull").addEventListener("click",async()=>{
+  if(demoMode){toast("演示：云端均值已在示例数据中展示（未联网）");return;}
   if(!sbReady()){toast("先在上方连接 Supabase");return;}
   try{
     const rows=await sbRequest("/bench_samples?select=dims&limit=1000");
@@ -1776,7 +1882,7 @@ function renderAccount(){
   const name=state.account&&state.account.name||"本地访客";
   $("#account-name").textContent=name;
   $("#account-avatar").textContent=name.slice(0,1);
-  $("#account-sub").textContent=sbReady()?"已连接 Supabase · 可推送":"未登录 · 数据只在此浏览器";
+  $("#account-sub").textContent=demoMode?"演示模式 · 内置示例数据":(sbReady()?"已连接 Supabase · 可推送":"未登录 · 数据只在此浏览器");
   $("#cloud-account").textContent=state.backend.clientId;
   $("#cloud-queue-count").textContent=state.syncQueue.filter(x=>!x.synced).length+" 条待推送";
 }
@@ -1788,10 +1894,22 @@ function renderCloud(){
 function renderBenchmark(){
   const samples=state.benchSamples;
   const cloud=state.backend.cloudMean;
-  $("#bench-count").textContent=samples.length+" 份本地"+(state.backend.cloudCount?" + "+state.backend.cloudCount+" 份云端":"");
+  $("#bench-count").textContent=samples.length+" 份本地"+(state.backend.cloudCount?" + "+state.backend.cloudCount+" 份云端"+(demoMode?"（演示）":""):"");
   $("#bench-source").textContent=cloud?"本地 + 云端均值":"仅本地"+(samples.length?"":"（空）");
   $("#btn-bench-upload").disabled=!sbReady();
-  $("#btn-bench-upload").textContent=sbReady()?"上传到云端":"上传（先连接）";
+  $("#btn-bench-upload").textContent=demoMode?"模拟上传":(sbReady()?"上传到云端":"上传（先连接）");
+  const total=(state.backend.cloudCount||0)+samples.length;
+  const conf=$("#bench-confidence");
+  if(conf){
+    const level=total<20?"low":total<100?"mid":"good";
+    const msg=total<20
+      ?`当前样本 ${total} 份（<20）：均值只反映这一小撮人的偏好差异，不能当作结论。`
+      :total<100
+        ?`当前样本 ${total} 份：属探索性参考，方向可看，数值别当真。`
+        :`当前样本 ${total} 份：达到初步参考区间，但仍不是科学抽样，结论要留余地。`;
+    conf.className="bench-conf "+level;
+    conf.textContent=msg+(demoMode?"（示例数据，不计入真实样本）":"");
+  }
   const bars=$("#bench-bars"), list=$("#bench-list");
   if(!samples.length&&!cloud){
     bars.innerHTML='<div class="agg-empty">还没有样本。点上面按钮记录一次当前状态。</div>';
@@ -1839,6 +1957,51 @@ $("#btn-sync-clear").addEventListener("click",()=>{
   state.syncQueue=[]; saveState(); renderAll(); toast("同步队列已清空");
 });
 
+/* ---------------- demo mode + share ---------------- */
+function updateDemoUI(){
+  document.body.classList.toggle("demo-on",demoMode);
+  const t=$("#btn-demo-toggle");
+  if(t)t.textContent=demoMode?"■ 退出演示模式":"▶ 进入演示模式";
+  const n=$("#demo-cloud-note");
+  if(n)n.style.display=demoMode?"block":"none";
+}
+function enterDemo(){
+  if(demoMode)return;
+  demoMode=true;
+  demoMemory=buildDemoState();
+  state=loadState();
+  _syncBaseline=null;
+  saveState(); renderAll(); updateDemoUI();
+  toast("已进入演示模式（示例数据）");
+}
+function exitDemo(){
+  if(!demoMode)return;
+  demoMode=false; demoMemory=null;
+  state=loadState();
+  _syncBaseline=null;
+  saveState(); renderAll(); updateDemoUI();
+  toast("已退出演示模式，恢复你的本地数据");
+}
+$("#btn-demo-toggle").addEventListener("click",()=>demoMode?exitDemo():enterDemo());
+$("#btn-demo-exit").addEventListener("click",exitDemo);
+function shareText(){
+  const base=location.protocol==="file:"?location.href.split("?")[0]:location.origin+location.pathname;
+  return "我在用「反骨 REWIRE」做一次互联网人格实验：给 8 维兴趣打分 → 生成 7 天驯化计划 → 用主动搜索和负反馈，把推荐算法从「它以为的我」扳向「我想成为的我」。\n\n"
+    +"工具本地优先，不自动刷量、不绕平台规则。云版可匿名上传八维分数参与效果基准：只存分数和完成率，不含身份、不含原始导出文本、不含文件路径。样本不足 20 时均值没有统计意义，请当趋势参考而非结论。\n\n"
+    +"打开："+base+"\n想先看界面可加 ?demo=1 进入演示模式（示例数据，不联网、不写入你的档案）。";
+}
+$("#btn-share-copy").addEventListener("click",async()=>{
+  const txt=shareText();
+  const box=$("#share-copy-text"); if(box)box.textContent=txt;
+  try{await navigator.clipboard.writeText(txt);$("#share-hint").textContent="已复制，可直接发送。";}
+  catch(e){
+    const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");$("#share-hint").textContent="已复制，可直接发送。";}
+    catch(err){$("#share-hint").textContent="复制失败，请手动选中上方文案。";}
+    ta.remove();
+  }
+});
+
 /* ---------------- boot ---------------- */
 function renderAll(){
   renderProfile(); renderTarget(); renderRadars(); dimBars($("#dash-dims"));
@@ -1846,9 +2009,14 @@ function renderAll(){
   renderAccount(); renderCloud(); renderBenchmark(); renderBackendUI();
   $$("[data-ammo]").forEach(b=>b.classList.toggle("on",b.dataset.ammo===state.ammoType));
 }
-if(!state.plan) buildPlan(false);
-renderAll();
-takeSnapshot(false);
+if(new URLSearchParams(location.search).has("demo")){
+  enterDemo();
+}else{
+  if(!state.plan) buildPlan(false);
+  renderAll();
+  takeSnapshot(false);
+  updateDemoUI();
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,8 @@
+.check.js
+.verify-demo.js
+deploy-cloudbase/site/
+.playwright-cli/
+*.pyc
+__pycache__/
+.DS_Store
+Thumbs.db

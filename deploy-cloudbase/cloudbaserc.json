@@ -1,0 +1,11 @@
+{
+  "envId": "YOUR_ENV_ID",
+  "hosting": [
+    {
+      "name": "rewire-cloud",
+      "root": "./site",
+      "framework": "static",
+      "deployPath": "/"
+    }
+  ]
+}
